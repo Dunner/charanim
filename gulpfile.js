@@ -18,7 +18,7 @@
     css:      'dev/css', 
     styles:   'dev/styles', 
     img:      'dev/images',
-    pixi:     'node_modules/pixi.js/dist/pixi.min.js',
+    svgjs:     'node_modules/svg.js/dist/svg.min.js',
   }; 
   //## 
   // Begin Script Tasks 
@@ -36,7 +36,7 @@
   gulp.task('js', function () { 
     return gulp.src([ 
         paths.js, 
-        paths.pixi
+        paths.svgjs
       ])
       .pipe(concat('bundle.js'))
       .pipe(gulp.dest(paths.dev));

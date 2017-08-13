@@ -15,8 +15,8 @@
     "jshint": "^2.9.5",
     "jshint-stylish": "^2.2.1",
     "nib": "^1.1.2",
-    "pixi.js": "^4.5.4",
     "stylus": "^0.54.5",
-    "stylus-type-utils": "0.0.3"
+    "stylus-type-utils": "0.0.3",
+    "svg.js": "^2.6.3"
   }
 }
