@@ -18,7 +18,8 @@
     css:      'dev/css', 
     styles:   'dev/styles', 
     img:      'dev/images',
-    svgjs:     'node_modules/svg.js/dist/svg.min.js',
+    svgjs:    'node_modules/svg.js/dist/svg.min.js',
+    jquery:   'node_modules/jquery/dist/jquery.min.js',
   }; 
   //## 
   // Begin Script Tasks 
@@ -35,8 +36,9 @@
   //## 
   gulp.task('js', function () { 
     return gulp.src([ 
-        paths.js, 
-        paths.svgjs
+        paths.jquery,
+        paths.svgjs,
+        paths.js
       ])
       .pipe(concat('bundle.js'))
       .pipe(gulp.dest(paths.dev));

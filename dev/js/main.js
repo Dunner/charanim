@@ -8,13 +8,18 @@ $( document ).ready(function() {
     var wrapper = draw.nested();
     var group = wrapper.group();
 
-    character[prop] = wrapper.rect(paperdoll[prop].width, paperdoll[prop].height).attr({ fill: '#00F', opacity: 0.5 });
+    character[prop] = wrapper.rect(paperdoll[prop].width, paperdoll[prop].height).attr({ fill: '#00F', opacity: 0.5, id: prop });
     character[prop].wrapper = wrapper;
     character[prop].group = group;
     wrapper.viewbox(0,0,800,800);
     wrapper.width(800);
     wrapper.height(800);
-    character[prop].radius(15)
+    character[prop].radius(25);
+
+    character[prop].wrapper.center(
+      character[prop].wrapper.parent().node.clientWidth/2,
+      character[prop].wrapper.parent().node.clientHeight/3.3      
+    );
           
     character[prop].center(
       character[prop].wrapper.width()/2+paperdoll[prop].offsetX,
@@ -23,7 +28,7 @@ $( document ).ready(function() {
 
     character[prop].group.add(character[prop]);
 
-    drawAxlePoint(prop);
+    //drawAxlePoint(prop);
     drawConnectionPoints(prop);
   }
 
@@ -31,12 +36,16 @@ $( document ).ready(function() {
     character[prop].axle = character[prop].wrapper.rect(5, 5).attr({ fill: '#0f0' });
     //axle
 
-    character[prop].group.add(character[prop].axle);
+    //character[prop].group.add(character[prop].axle);
   }
 
   function updateAxlePoint(prop) {
-    character[prop].axle.cx(character[prop].wrapper.width()/2)
-                        .cy(character[prop].wrapper.height()/2)
+    if (character[prop].axle) {
+      character[prop].axle.center(
+        character[prop].wrapper.width()/2,
+        character[prop].wrapper.height()/2
+      );
+    }
   }
 
   function drawConnectionPoints(prop) {
@@ -44,8 +53,10 @@ $( document ).ready(function() {
     for (var connectionFor in paperdoll[prop].connectionsFor) {
       var connection = paperdoll[prop].connectionsFor[connectionFor];
       connection.point = character[prop].wrapper.rect(5, 5).attr({ fill: '#f00' });
-      connection.point.cx(character[prop].wrapper.width()/2)
-                      .cy(character[prop].wrapper.height()/2)
+      connection.point.center(
+        character[prop].wrapper.width()/2,
+        character[prop].wrapper.height()/2
+      );
       //character[prop].group.add(connection.point);
     }
   }
@@ -56,14 +67,14 @@ $( document ).ready(function() {
       var connection = paperdoll[prop].connectionsFor[connectionFor];
 
 
-      let pointDir = pointDirection({x:character[prop].wrapper.width()/2,y:character[prop].wrapper.height()/2},{x:character[prop].wrapper.width()/2+connection.offsetX,y:character[prop].wrapper.height()/2+connection.offsetY});
-      let pointDist = pointDistance({x:character[prop].wrapper.width()/2,y:character[prop].wrapper.height()/2},{x:character[prop].wrapper.width()/2+connection.offsetX,y:character[prop].wrapper.height()/2+connection.offsetY});
+      var pointDir = pointDirection({x:character[prop].wrapper.width()/2,y:character[prop].wrapper.height()/2},{x:character[prop].wrapper.width()/2+connection.offsetX,y:character[prop].wrapper.height()/2+connection.offsetY});
+      var pointDist = pointDistance({x:character[prop].wrapper.width()/2,y:character[prop].wrapper.height()/2},{x:character[prop].wrapper.width()/2+connection.offsetX,y:character[prop].wrapper.height()/2+connection.offsetY});
       
-      let pdir1 = ((((pointDir % 360) + 360) % 360) / 57);
-      let pdir2 = character[prop].parent().transform().rotation/57;
-      let pdir3 = pdir1+pdir2;
+      var pdir1 = ((((pointDir % 360) + 360) % 360) / 57);
+      var pdir2 = character[prop].parent().transform().rotation/57;
+      var pdir3 = pdir1+pdir2;
 
-      let offset = lengthDir(pointDist,pdir3);
+      var offset = lengthDir(pointDist,pdir3);
 
       connection.point.center(
         (character[prop].wrapper.width()/2)+offset.x,
@@ -83,7 +94,7 @@ $( document ).ready(function() {
   }
 
   function update() {
-    let part = 'head';
+    var part = 'head';
     //console.log(normalizeAngle(character.torso.transform().rotation));
     rotate++;
     //character[part].group.rotate(rotate, character[part].wrapper.width()/2, character[part].wrapper.height()/2);
@@ -92,14 +103,23 @@ $( document ).ready(function() {
     }
 
 
+
     for (var prop in paperdoll) {
+
+      character[prop].width(paperdoll[prop].width);
+      character[prop].height(paperdoll[prop].height);
+      character[prop].center(
+        character[prop].wrapper.width()/2+paperdoll[prop].offsetX,
+        character[prop].wrapper.height()/2+paperdoll[prop].offsetY
+      );
+
       updateAxlePoint(prop);
       updateConnectionPoints(prop);
 
       //prop has connection
       if (paperdoll[prop].connectsTo) {
-        let connectsTo = paperdoll[paperdoll[prop].connectsTo];
-        let connection = connectsTo.connectionsFor[prop];
+        var connectsTo = paperdoll[paperdoll[prop].connectsTo];
+        var connection = connectsTo.connectionsFor[prop];
         character[prop].wrapper.center(
           character[paperdoll[prop].connectsTo].wrapper.x() + connection.point.cx(),
           character[paperdoll[prop].connectsTo].wrapper.y() + connection.point.cy()
@@ -114,9 +134,37 @@ $( document ).ready(function() {
 
   }
 
-  document.getElementById("drawing").onclick = function(event) {
-      character['torso'].wrapper.center(event.clientX, event.clientY);
-  };
+  $('#drawing').on('click',function(event) {
+      // Move doll with click
+      //character['torso'].wrapper.center(event.clientX, event.clientY);
+
+
+      if (event.target.nodeName == 'rect') {
+        var prop = event.target.id;
+        var part = character[prop];
+        var dollpart = paperdoll[prop];
+
+        var options_name = prop;
+        var options_width = dollpart.width;
+        var options_height = dollpart.height;
+        var options_rotation = dollpart.rotation;
+        var options_offsetX = dollpart.offsetX;
+        var options_offsetY = dollpart.offsetY;
+        console.log(options_name,options_width,options_height,options_rotation,options_offsetX,options_offsetY);
+
+        $('#options__name').text(options_name);
+        $('#options__width').val(options_width);
+        $('#options__height').val(options_height);
+        $('#options__rotation').val(options_rotation);
+        $('#options__offsetX').val(options_offsetX);
+        $('#options__offsetY').val(options_offsetY);
+      }
+  });
+  $('#options__width').on('keyup', function(e){paperdoll[$('#options__name').text()].width = parseInt($(this).val())});
+  $('#options__height').on('keyup', function(e){paperdoll[$('#options__name').text()].height = parseInt($(this).val())});
+  $('#options__rotation').on('keyup', function(e){paperdoll[$('#options__name').text()].rotation = parseInt($(this).val())});
+  $('#options__offsetX').on('keyup', function(e){paperdoll[$('#options__name').text()].offsetX = parseInt($(this).val())});
+  $('#options__offsetY').on('keyup', function(e){paperdoll[$('#options__name').text()].offsetY = parseInt($(this).val())});
 
   create();
   setInterval(update, 10);
@@ -135,7 +183,11 @@ var paperdoll = {
     connectionsFor: {
       'head': {
         'offsetX': 0,
-        'offsetY': -40
+        'offsetY': -30
+      },
+      'neck': {
+        'offsetX': 0,
+        'offsetY': -30
       },
       'armLeftUpper': {
         'offsetX': -45,
@@ -151,6 +203,13 @@ var paperdoll = {
       }
     }
   },
+  neck: {
+    width: 20,
+    height: 50,
+    offsetX: 0,
+    offsetY: -15,
+    connectsTo: 'torso'
+  },
   head: {
     width: 50,
     height: 50,
@@ -159,7 +218,7 @@ var paperdoll = {
     connectsTo: 'torso'
   },
   armLeftUpper: {
-    width: 25,
+    width: 20,
     height: 75,
     offsetX: 0,
     offsetY: 25,
@@ -168,7 +227,7 @@ var paperdoll = {
     connectionsFor: {
       'armLeftLower': {
         'offsetX': 0,
-        'offsetY': 50
+        'offsetY': 52
       }
     }
   },
@@ -180,7 +239,7 @@ var paperdoll = {
     connectsTo: 'armLeftUpper'
   },
   armRightUpper: {
-    width: 25,
+    width: 20,
     height: 75,
     offsetX: 0,
     offsetY: 25,
@@ -189,7 +248,7 @@ var paperdoll = {
     connectionsFor: {
       'armRightLower': {
         'offsetX': 0,
-        'offsetY': 50
+        'offsetY': 52
       }
     }
   },
@@ -209,17 +268,17 @@ var paperdoll = {
     connectionsFor: {
       'legLeftUpper': {
         'offsetX': -20,
-        'offsetY': 55
+        'offsetY': 35
       },
       'legRightUpper': {
         'offsetX': 20,
-        'offsetY': 55
+        'offsetY': 35
       }
     }
   },
   legLeftUpper: {
-    width: 25,
-    height: 85,
+    width: 20,
+    height: 75,
     offsetX: 0,
     offsetY: 25,
     rotation: 10,
@@ -227,7 +286,7 @@ var paperdoll = {
     connectionsFor: {
       'legLeftLower': {
         'offsetX': 0,
-        'offsetY': 50
+        'offsetY': 52
       }
     }
   },
@@ -239,8 +298,8 @@ var paperdoll = {
     connectsTo: 'legLeftUpper'
   },
   legRightUpper: {
-    width: 25,
-    height: 85,
+    width: 20,
+    height: 75,
     offsetX: 0,
     offsetY: 25,
     connectsTo: 'belly',
@@ -248,7 +307,7 @@ var paperdoll = {
     connectionsFor: {
       'legRightLower': {
         'offsetX': 0,
-        'offsetY': 50
+        'offsetY': 52
       }
     }
   },
@@ -281,7 +340,7 @@ function lengthDir(length, direction) { //vector, magnitude
   return {
     x: length*Math.cos(direction),
     y: length*Math.sin(direction)
-  }
+  };
 }
 
 function normalizeAngle(angle) {

@@ -10,3 +10,14 @@ body {
   height: 100%;
   overflow: hidden;
 }
+#options {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: 200px;
+  background: #333;
+  color: #fff;
+}
+
+/*# sourceMappingURL=style.css.map */
