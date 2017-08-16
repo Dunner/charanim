@@ -12,14 +12,24 @@
 
       <div id="drawing"></div>
 
+      <div id="tools">
+        <div id="tools__circle">
+          <span></span>
+        </div>
+      </div>
+
+      <div id="timeline">
+        <div id="timeline__keyframes"></div>
+        <div id="timeline__indicator"></div>
+      </div>
+
       <div id="options">
-        <h3 id="options__name">none</h3>
-        <input id="options__width"></input>
-        <input id="options__height"></input>
-        <input id="options__rotation"></input>
-        <input id="options__offsetX"></input>
-        <input id="options__offsetY"></input>
-        <div id="options__connections"></div>
+        <div id="options__group" class="options__section"></div>
+        <div id="options__part" class="options__section"></div>
+        <div class="options__section">
+          <button id="options__save_props">Save</button>
+          <button id="options__play">Play</button>
+        </div>
       </div>
 
       <script src="bundle.js"></script> 
