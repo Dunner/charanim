@@ -26,8 +26,8 @@ body
     top 0
     left 20px
     height 80px
-    width 3px
-    background lime
+    width 0px
+    outline 2px solid lime
     color #fff
   #timeline__keyframes
     position absolute
@@ -36,12 +36,18 @@ body
     right 0px
     top 0
     overflow hidden
-    .keyframe 
-      width 8px
-      height 8px
-      background gray
+    cursor pointer
+    .keyframe
+      border-radius 50%;
+      width 20px
+      height 20px
+      background #fff
       position absolute
-      top calc( 50% - 4px )
+      top calc( 50% - 10px )
+      &:hover
+        background lime
+      &--selected
+        background lime
     
 #options
   position absolute

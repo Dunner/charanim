@@ -13,19 +13,18 @@ function initAnimation(keyframes, char) {
     framesRemaining: 0,
     currentAnimations: {}
   }
-  animation.keyframes = keyframes;
-  if (animation.keyframes[0].time !== 0) {
-    keyframes.unshift(window.freshState);
+  animation.keyframes = keyframes ? keyframes : [];
+  console.log(animation.keyframes);
+  if (animation.keyframes.length == 0) {
+    animation.keyframes.unshift(window.freshState);
+    setTimeout(function(){selectKeyframe(0)},300);
   }
+  
   clearInterval(animationInterval);
   animationInterval = setInterval(animationPlay, animation.msBetweenFrames);
 
   //reset
-  for (var g in keyframes[0].groups) {
-    for (var prop in keyframes[0].groups[g]) {
-      character[g][prop] = keyframes[0].groups[g][prop];
-    }
-  }
+  poseCharacter(keyframes[0]);
 
 }
 
@@ -101,7 +100,7 @@ function processKeyframe(keyframe, frameCurrent) {
   }
 }
 
-function createKeyframe(char){
+function createKeyframeObject(char){
   var groups = {};
   var props = [
     'rotation',
@@ -117,4 +116,13 @@ function createKeyframe(char){
     }
   }
   return groups;
+}
+
+function poseCharacter(keyframe) {
+  //reset
+  for (var g in keyframe.groups) {
+    for (var prop in keyframe.groups[g]) {
+      character[g][prop] = keyframe.groups[g][prop];
+    }
+  }
 }

@@ -1,17 +1,7 @@
 
 
-var emptyframes = [];
-$('#options__save_props').on('click', function(e){
-  var newKeyframe = createKeyframe(character);
-  newKeyframe = {
-    time: (emptyframes.length+1)*1000,
-    groups: newKeyframe
-  };
-  emptyframes.push(newKeyframe);
-  updateTimeline(emptyframes);
-})
 $('#options__play').on('click', function(e){
-  initAnimation(emptyframes, character)
+  initAnimation(timeline.keyframes, character);
 })
 
 
@@ -79,6 +69,7 @@ $('#drawing').on('mousedown',function(event) {
       }
       var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation));
       character[window.currentProp].rotation = angle -90;
+      updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
            '-moz-transform' : 'rotate('+angle+'deg)',  
@@ -109,9 +100,9 @@ $('#drawing').on('mousedown',function(event) {
         
       }
     }
-    $('#options__group--xscale').on('keyup', function(e){character[prop]['xscale'] = Number($(this).val())});
-    $('#options__group--yscale').on('keyup', function(e){character[prop]['yscale'] = Number($(this).val())});
-    $('#options__group--rotation').on('keyup', function(e){character[prop]['rotation'] = Number($(this).val())});
+    $('#options__group--xscale').on('keyup', function(e){character[prop]['xscale'] = Number($(this).val()); updateCurrentKeyframe()});
+    $('#options__group--yscale').on('keyup', function(e){character[prop]['yscale'] = Number($(this).val()); updateCurrentKeyframe()});
+    $('#options__group--rotation').on('keyup', function(e){character[prop]['rotation'] = Number($(this).val()); updateCurrentKeyframe()});
 
 
     //parts

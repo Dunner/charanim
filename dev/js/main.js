@@ -11,8 +11,9 @@ $( document ).ready(function() {
   var updateInterval = setInterval(update, 10);
   window.freshState = {
     time:0,
-    groups: createKeyframe(character)
+    groups: createKeyframeObject(character)
   };
+  initAnimation([],character)
 
 }); 
 
