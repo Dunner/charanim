@@ -53,13 +53,13 @@ function drawProp(prop) {
 
 
 
-  //drawAxlePoint(prop);
   drawConnectionPoints(prop);
+  drawAxlePoint(prop);
 }
 
 
 function drawAxlePoint(prop) {
-  character[prop].axle = character[prop].wrapper.rect(5, 5).attr({ fill: '#0f0' });
+  character[prop].axle = character[prop].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: 0.2 });
   //axle
 
   //character[prop].group.add(character[prop].axle);
@@ -68,7 +68,7 @@ function drawConnectionPoints(prop) {
   //connectionpoints
   for (var connectionFor in paperdoll[prop].connectionsFor) {
     var connection = paperdoll[prop].connectionsFor[connectionFor];
-    connection.point = character[prop].wrapper.rect(5, 5).attr({ fill: '#f00' });
+    connection.point = character[prop].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: 0.2 });
     connection.point.center(
       character[prop].wrapper.width()/2,
       character[prop].wrapper.height()/2

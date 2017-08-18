@@ -14,7 +14,6 @@ function initAnimation(keyframes, char) {
     currentAnimations: {}
   }
   animation.keyframes = keyframes ? keyframes : [];
-  console.log(animation.keyframes);
   if (animation.keyframes.length == 0) {
     animation.keyframes.unshift(window.freshState);
     setTimeout(function(){selectKeyframe(0)},300);
@@ -61,7 +60,6 @@ function animationPlay() {
 }
 
 function processKeyframe(keyframe, frameCurrent) {
-  console.log(animation.keyframes.indexOf(keyframe)+1)
 
   //Info from this keyframe
   for (var g in keyframe.groups) {
@@ -86,12 +84,12 @@ function processKeyframe(keyframe, frameCurrent) {
         if (currentGroupAnim[prop].to) {continue;}
         if (currentGroupAnim[prop].from == nextGroupAnimInfo[prop]) {continue;}
         currentGroupAnim[prop].to = nextGroupAnimInfo[prop];
-          
+
+        var aDiff = angleDiff(currentGroupAnim[prop].from, currentGroupAnim[prop].to)
         var framesToPlayWith = (animation.keyframes[i].time - frameCurrent) / animation.msBetweenFrames;
-        var stepSize = Math.abs(currentGroupAnim[prop].from-currentGroupAnim[prop].to);
-        currentGroupAnim[prop].stepPerFrame = stepSize/ framesToPlayWith;
+        currentGroupAnim[prop].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
         currentGroupAnim[prop].current = currentGroupAnim[prop].from;
-        
+        console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
       }
     }
   }
@@ -99,6 +97,7 @@ function processKeyframe(keyframe, frameCurrent) {
     clearInterval(animationInterval);
   }
 }
+
 
 function createKeyframeObject(char){
   var groups = {};
@@ -126,3 +125,4 @@ function poseCharacter(keyframe) {
     }
   }
 }
+

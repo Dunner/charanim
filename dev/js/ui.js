@@ -7,13 +7,17 @@ $('#options__play').on('click', function(e){
 
 var rotatedragging;
 $('#tools__circle').on('mousedown',function (event) {
+  if (event.which == 1) {
     rotatedragging = setInterval(function () {
       var circleCenter = {
         y: event.target.offsetTop+event.target.parentElement.offsetTop+event.target.offsetHeight/2,
         x: event.target.offsetLeft+event.target.parentElement.offsetLeft+event.target.offsetWidth/2
       }
-      var angle = normalizeAngle(pointDirection(circleCenter,window.mouseLocation));
-      character[window.currentProp].rotation = Number(angle -90).toFixed(2);
+      var angle = normalizeAngle(pointDirection(circleCenter,window.mouseLocation)-90);
+      character[window.currentProp].rotation = Number(angle).toFixed(2);
+      angle = normalizeAngle(character[window.currentProp].rotation);
+      angle = normalizeAngle(angle+90);
+      updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
            '-moz-transform' : 'rotate('+angle+'deg)',  
@@ -22,9 +26,9 @@ $('#tools__circle').on('mousedown',function (event) {
                 'transform' : 'rotate('+angle+'deg)',  
                      'zoom' : 1
       });
-
     }, 100);
     return false;
+  }
 });
 
 
@@ -61,14 +65,33 @@ $('#drawing').on('mousedown',function(event) {
     window.currentProp = prop;
     window.currentPropPart = part;
 
+    var axle = character[prop].wrapper.last();
+    var axlePosition = axle.node.getBoundingClientRect();
+    $('#tools').css({
+      left: (axlePosition.left + axle.width()/2) - $('#tools')[0].clientWidth/2,
+      top: (axlePosition.top + axle.height()/2) - $('#tools')[0].clientHeight/2
+    })
+    var angle = normalizeAngle(character[prop].rotation);
+    var angle = normalizeAngle(angle+90);
+    console.log(angle)
+    $('#tools__circle').css({
+      '-webkit-transform' : 'rotate('+Number(angle) +'deg)',
+         '-moz-transform' : 'rotate('+Number(angle) +'deg)',  
+          '-ms-transform' : 'rotate('+Number(angle) +'deg)',  
+           '-o-transform' : 'rotate('+Number(angle) +'deg)',  
+              'transform' : 'rotate('+Number(angle) +'deg)',  
+                   'zoom' : 1
+    });
+
+/*
     clearInterval(rotatedragging);
     rotatedragging = setInterval(function () {
       var circleCenter = {
         y: event.target.offsetTop+event.target.parentElement.offsetTop+event.target.offsetHeight/2,
         x: event.target.offsetLeft+event.target.parentElement.offsetLeft+event.target.offsetWidth/2
       }
-      var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation));
-      character[window.currentProp].rotation = angle -90;
+      var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation)-90);
+      character[window.currentProp].rotation = angle;
       updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
@@ -80,7 +103,7 @@ $('#drawing').on('mousedown',function(event) {
       });
 
     }, 100);
-
+*/
     var options_width = part.data.width;
     var options_height = part.data.height;
     var options_rotation = part.data.rotation;
@@ -132,5 +155,10 @@ $('#drawing').on('mousedown',function(event) {
     $('#options__part--radius').on('keyup', function(e){part.data.radius = Number($(this).val())});
     $('#options__part--fill').on('keyup', function(e){part.data.fill = Number($(this).val())});
 
+  } else {
+    $('#tools').css({
+      left: -999,
+      top: -999
+    })
   }
 });

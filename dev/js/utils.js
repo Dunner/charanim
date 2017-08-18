@@ -52,7 +52,28 @@ function positionFromEdge2(info, prop) {
   return {x:horizontal, y:vertical};
 }
 
-
+function angleDiff(a, b) {
+  var direction = 1;
+  //Takes angles between 0 and 360
+  var checkNegativeLength = 0; 
+  var checkPositiveLength = 0;
+  if(a>b){
+    checkNegativeLength = a-b;
+    checkPositiveLength = (360-a)+b;
+  }
+  if(b>a){
+    checkNegativeLength = Math.abs(((b-360)-a));
+    checkPositiveLength = Math.abs(a-b);
+  }
+  if (checkNegativeLength < checkPositiveLength) {
+    direction = -1;
+  }
+  //Returns the smallest of the two lengths and its direction
+  return {
+    direction: direction,
+    distance: Math.min(checkNegativeLength, checkPositiveLength)
+  };
+}
 
 
 function pointDirection(pointA, pointB) {
@@ -78,4 +99,22 @@ function lengthDir(length, direction) { //vector, magnitude
 
 function normalizeAngle(angle) {
   return (angle+360)%360;
+}
+
+function getOffset( elem ) {
+  var offsetLeft = 0;
+  var offsetTop = 0;
+  console.dir(elem)
+  do {
+    if ( !isNaN( elem.offsetLeft ) )
+    {
+      offsetLeft += elem.offsetLeft;
+      offsetTop += elem.offsetTop;
+    }
+  } while( elem = elem.offsetParent );
+
+  return {
+    left: offsetLeft,
+    top: offsetTop
+  };
 }

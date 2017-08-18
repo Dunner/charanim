@@ -1,4 +1,28 @@
 var paperdoll = {
+  belly: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 60,
+      height: 50,
+      top: 'center',
+      left: 'center',
+      rotation: 0,
+      radius: 15
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'legLeftUpper': {
+        'left': 17,
+        'bottom': 10
+      },
+      'legRightUpper': {
+        'right': 17,
+        'bottom': 10
+      }
+    }
+  },
   torso: {
     xscale: 1,
     yscale: 1,
@@ -133,30 +157,6 @@ var paperdoll = {
       radius: 10
     }],
     connectsTo: 'armRightUpper'
-  },
-  belly: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 60,
-      height: 50,
-      top: 'center',
-      left: 'center',
-      rotation: 0,
-      radius: 15
-    }],
-    connectsTo: 'torso',
-    connectionsFor: {
-      'legLeftUpper': {
-        'left': 17,
-        'bottom': 10
-      },
-      'legRightUpper': {
-        'right': 17,
-        'bottom': 10
-      }
-    }
   },
   legLeftUpper: {
     xscale: 1,

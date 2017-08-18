@@ -35,8 +35,7 @@ function update() {
       );
 
     }
-
-    if (character[prop].rotation) {
+    if (character[prop].rotation !== undefined) {
       character[prop].group.rotate(character[prop].rotation, character[prop].wrapper.width()/2, character[prop].wrapper.height()/2);
     }
 

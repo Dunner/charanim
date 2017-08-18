@@ -22,7 +22,6 @@ function initAnimation(keyframes, char) {
     currentAnimations: {}
   }
   animation.keyframes = keyframes ? keyframes : [];
-  console.log(animation.keyframes);
   if (animation.keyframes.length == 0) {
     animation.keyframes.unshift(window.freshState);
     setTimeout(function(){selectKeyframe(0)},300);
@@ -69,7 +68,6 @@ function animationPlay() {
 }
 
 function processKeyframe(keyframe, frameCurrent) {
-  console.log(animation.keyframes.indexOf(keyframe)+1)
 
   //Info from this keyframe
   for (var g in keyframe.groups) {
@@ -94,12 +92,12 @@ function processKeyframe(keyframe, frameCurrent) {
         if (currentGroupAnim[prop].to) {continue;}
         if (currentGroupAnim[prop].from == nextGroupAnimInfo[prop]) {continue;}
         currentGroupAnim[prop].to = nextGroupAnimInfo[prop];
-          
+
+        var aDiff = angleDiff(currentGroupAnim[prop].from, currentGroupAnim[prop].to)
         var framesToPlayWith = (animation.keyframes[i].time - frameCurrent) / animation.msBetweenFrames;
-        var stepSize = Math.abs(currentGroupAnim[prop].from-currentGroupAnim[prop].to);
-        currentGroupAnim[prop].stepPerFrame = stepSize/ framesToPlayWith;
+        currentGroupAnim[prop].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
         currentGroupAnim[prop].current = currentGroupAnim[prop].from;
-        
+        console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
       }
     }
   }
@@ -107,6 +105,7 @@ function processKeyframe(keyframe, frameCurrent) {
     clearInterval(animationInterval);
   }
 }
+
 
 function createKeyframeObject(char){
   var groups = {};
@@ -134,6 +133,8 @@ function poseCharacter(keyframe) {
     }
   }
 }
+
+
 function create() {
 
 
@@ -189,13 +190,13 @@ function drawProp(prop) {
 
 
 
-  //drawAxlePoint(prop);
   drawConnectionPoints(prop);
+  drawAxlePoint(prop);
 }
 
 
 function drawAxlePoint(prop) {
-  character[prop].axle = character[prop].wrapper.rect(5, 5).attr({ fill: '#0f0' });
+  character[prop].axle = character[prop].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: 0.2 });
   //axle
 
   //character[prop].group.add(character[prop].axle);
@@ -204,7 +205,7 @@ function drawConnectionPoints(prop) {
   //connectionpoints
   for (var connectionFor in paperdoll[prop].connectionsFor) {
     var connection = paperdoll[prop].connectionsFor[connectionFor];
-    connection.point = character[prop].wrapper.rect(5, 5).attr({ fill: '#f00' });
+    connection.point = character[prop].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: 0.2 });
     connection.point.center(
       character[prop].wrapper.width()/2,
       character[prop].wrapper.height()/2
@@ -238,6 +239,30 @@ $( document ).ready(function() {
 
 
 var paperdoll = {
+  belly: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 60,
+      height: 50,
+      top: 'center',
+      left: 'center',
+      rotation: 0,
+      radius: 15
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'legLeftUpper': {
+        'left': 17,
+        'bottom': 10
+      },
+      'legRightUpper': {
+        'right': 17,
+        'bottom': 10
+      }
+    }
+  },
   torso: {
     xscale: 1,
     yscale: 1,
@@ -373,30 +398,6 @@ var paperdoll = {
     }],
     connectsTo: 'armRightUpper'
   },
-  belly: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 60,
-      height: 50,
-      top: 'center',
-      left: 'center',
-      rotation: 0,
-      radius: 15
-    }],
-    connectsTo: 'torso',
-    connectionsFor: {
-      'legLeftUpper': {
-        'left': 17,
-        'bottom': 10
-      },
-      'legRightUpper': {
-        'right': 17,
-        'bottom': 10
-      }
-    }
-  },
   legLeftUpper: {
     xscale: 1,
     yscale: 1,
@@ -525,7 +526,6 @@ function selectKeyframe(index){
     $('#timeline__indicator').css({'left': keyframe.time*basisPoint});
     animation.frameCurrent = keyframe.time;
     $(keyframe.element).addClass('keyframe--selected');
-    console.log('ran')
   }
   timeline.keyframeSelected = keyframe;
 
@@ -583,13 +583,17 @@ $('#options__play').on('click', function(e){
 
 var rotatedragging;
 $('#tools__circle').on('mousedown',function (event) {
+  if (event.which == 1) {
     rotatedragging = setInterval(function () {
       var circleCenter = {
         y: event.target.offsetTop+event.target.parentElement.offsetTop+event.target.offsetHeight/2,
         x: event.target.offsetLeft+event.target.parentElement.offsetLeft+event.target.offsetWidth/2
       }
-      var angle = normalizeAngle(pointDirection(circleCenter,window.mouseLocation));
-      character[window.currentProp].rotation = Number(angle -90).toFixed(2);
+      var angle = normalizeAngle(pointDirection(circleCenter,window.mouseLocation)-90);
+      character[window.currentProp].rotation = Number(angle).toFixed(2);
+      angle = normalizeAngle(character[window.currentProp].rotation);
+      angle = normalizeAngle(angle+90);
+      updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
            '-moz-transform' : 'rotate('+angle+'deg)',  
@@ -598,9 +602,9 @@ $('#tools__circle').on('mousedown',function (event) {
                 'transform' : 'rotate('+angle+'deg)',  
                      'zoom' : 1
       });
-
     }, 100);
     return false;
+  }
 });
 
 
@@ -637,14 +641,33 @@ $('#drawing').on('mousedown',function(event) {
     window.currentProp = prop;
     window.currentPropPart = part;
 
+    var axle = character[prop].wrapper.last();
+    var axlePosition = axle.node.getBoundingClientRect();
+    $('#tools').css({
+      left: (axlePosition.left + axle.width()/2) - $('#tools')[0].clientWidth/2,
+      top: (axlePosition.top + axle.height()/2) - $('#tools')[0].clientHeight/2
+    })
+    var angle = normalizeAngle(character[prop].rotation);
+    var angle = normalizeAngle(angle+90);
+    console.log(angle)
+    $('#tools__circle').css({
+      '-webkit-transform' : 'rotate('+Number(angle) +'deg)',
+         '-moz-transform' : 'rotate('+Number(angle) +'deg)',  
+          '-ms-transform' : 'rotate('+Number(angle) +'deg)',  
+           '-o-transform' : 'rotate('+Number(angle) +'deg)',  
+              'transform' : 'rotate('+Number(angle) +'deg)',  
+                   'zoom' : 1
+    });
+
+/*
     clearInterval(rotatedragging);
     rotatedragging = setInterval(function () {
       var circleCenter = {
         y: event.target.offsetTop+event.target.parentElement.offsetTop+event.target.offsetHeight/2,
         x: event.target.offsetLeft+event.target.parentElement.offsetLeft+event.target.offsetWidth/2
       }
-      var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation));
-      character[window.currentProp].rotation = angle -90;
+      var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation)-90);
+      character[window.currentProp].rotation = angle;
       updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
@@ -656,7 +679,7 @@ $('#drawing').on('mousedown',function(event) {
       });
 
     }, 100);
-
+*/
     var options_width = part.data.width;
     var options_height = part.data.height;
     var options_rotation = part.data.rotation;
@@ -708,6 +731,11 @@ $('#drawing').on('mousedown',function(event) {
     $('#options__part--radius').on('keyup', function(e){part.data.radius = Number($(this).val())});
     $('#options__part--fill').on('keyup', function(e){part.data.fill = Number($(this).val())});
 
+  } else {
+    $('#tools').css({
+      left: -999,
+      top: -999
+    })
   }
 });
 
@@ -747,8 +775,7 @@ function update() {
       );
 
     }
-
-    if (character[prop].rotation) {
+    if (character[prop].rotation !== undefined) {
       character[prop].group.rotate(character[prop].rotation, character[prop].wrapper.width()/2, character[prop].wrapper.height()/2);
     }
 
@@ -847,7 +874,28 @@ function positionFromEdge2(info, prop) {
   return {x:horizontal, y:vertical};
 }
 
-
+function angleDiff(a, b) {
+  var direction = 1;
+  //Takes angles between 0 and 360
+  var checkNegativeLength = 0; 
+  var checkPositiveLength = 0;
+  if(a>b){
+    checkNegativeLength = a-b;
+    checkPositiveLength = (360-a)+b;
+  }
+  if(b>a){
+    checkNegativeLength = Math.abs(((b-360)-a));
+    checkPositiveLength = Math.abs(a-b);
+  }
+  if (checkNegativeLength < checkPositiveLength) {
+    direction = -1;
+  }
+  //Returns the smallest of the two lengths and its direction
+  return {
+    direction: direction,
+    distance: Math.min(checkNegativeLength, checkPositiveLength)
+  };
+}
 
 
 function pointDirection(pointA, pointB) {
@@ -873,4 +921,22 @@ function lengthDir(length, direction) { //vector, magnitude
 
 function normalizeAngle(angle) {
   return (angle+360)%360;
+}
+
+function getOffset( elem ) {
+  var offsetLeft = 0;
+  var offsetTop = 0;
+  console.dir(elem)
+  do {
+    if ( !isNaN( elem.offsetLeft ) )
+    {
+      offsetLeft += elem.offsetLeft;
+      offsetTop += elem.offsetTop;
+    }
+  } while( elem = elem.offsetParent );
+
+  return {
+    left: offsetLeft,
+    top: offsetTop
+  };
 }

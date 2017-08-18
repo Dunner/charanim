@@ -56,7 +56,6 @@ function selectKeyframe(index){
     $('#timeline__indicator').css({'left': keyframe.time*basisPoint});
     animation.frameCurrent = keyframe.time;
     $(keyframe.element).addClass('keyframe--selected');
-    console.log('ran')
   }
   timeline.keyframeSelected = keyframe;
 
