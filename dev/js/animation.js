@@ -6,6 +6,7 @@ var animation = {}
 
 
 function initAnimation(keyframes, char) {
+  console.log(keyframes)
   animation = {
     keyframes: [],
     msBetweenFrames: 10,
@@ -41,15 +42,14 @@ function animationPlay() {
 
   for (var g in animation.currentAnimations) {
     for (var prop in animation.currentAnimations[g]) {
+      if(!animation.currentAnimations[g][prop].to) {
+        continue;
+      }
       var values = animation.currentAnimations[g][prop];
-
-      if (character[g][prop] < animation.currentAnimations[g][prop].to) {
+      if (character[g][prop] !== animation.currentAnimations[g][prop].to) {
         character[g][prop] = character[g][prop] + values.stepPerFrame;
-      }
-      if (character[g][prop] > animation.currentAnimations[g][prop].to) {
-        character[g][prop] = character[g][prop] - values.stepPerFrame;
-      }
 
+      }
       if (Math.round(character[g][prop]) == Math.round(values.to)) {
         delete animation.currentAnimations[g][prop];
       }
@@ -73,29 +73,44 @@ function processKeyframe(keyframe, frameCurrent) {
     }
   }
 
-  //Add info from next relevant keyframe
+  //Check next keyframe to add .to to props
+  var currentKeyFrame = animation.keyframes.indexOf(keyframe);
+  if (currentKeyFrame == animation.keyframes.length-1) {
+    clearInterval(animationInterval);
+    return;
+  }
   for (var g in animation.currentAnimations) {
     var currentGroupAnim = animation.currentAnimations[g];
-    for (var i = animation.keyframes.indexOf(keyframe)+1; i < animation.keyframes.length; i++) {
-      var nextGroupAnimInfo = animation.keyframes[i].groups[g];
-      for (var prop in nextGroupAnimInfo) {
 
-        if (currentGroupAnim[prop] == undefined) {continue;}
-        if (currentGroupAnim[prop].to) {continue;}
-        if (currentGroupAnim[prop].from == nextGroupAnimInfo[prop]) {continue;}
+    /* LOOP THROUGH ALL UPCOMING KEYFRAMES TO ADD NEXT KEYFRAME WITH AN ANIMATION(.to)
+    for (var i = animation.keyframes.indexOf(keyframe)+1; i < animation.keyframes.length; i++) {
+      var nextGroupAnimInfo = animation.keyframes[indexOf(keyframe)+1].groups[g];
+    }
+    */
+
+    var nextKeyFrame = animation.keyframes[animation.keyframes.indexOf(keyframe)+1];
+    var nextGroupAnimInfo = nextKeyFrame.groups[g];
+    for (var prop in nextGroupAnimInfo) {
+      if (currentGroupAnim[prop] == undefined) {continue;}
+      if (!currentGroupAnim[prop].to) {
+        if (currentGroupAnim[prop].from === nextGroupAnimInfo[prop]) {
+          continue;
+        }
+        console.log('keyframe: ', currentKeyFrame, '. animate', g, prop)
         currentGroupAnim[prop].to = nextGroupAnimInfo[prop];
 
         var aDiff = angleDiff(currentGroupAnim[prop].from, currentGroupAnim[prop].to)
-        var framesToPlayWith = (animation.keyframes[i].time - frameCurrent) / animation.msBetweenFrames;
+        var framesToPlayWith = (nextKeyFrame.time - frameCurrent) / animation.msBetweenFrames;
         currentGroupAnim[prop].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
         currentGroupAnim[prop].current = currentGroupAnim[prop].from;
-        console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
+        currentGroupAnim[prop].aDiff = aDiff;
+        //console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
       }
     }
+    
   }
-  if (animation.keyframes.indexOf(keyframe) == animation.keyframes.length-1) {
-    clearInterval(animationInterval);
-  }
+
+
 }
 
 
@@ -111,7 +126,7 @@ function createKeyframeObject(char){
     groups[group] = {};
     for (var index in props) {
       var prop = props[index];
-      groups[group][prop] = char[group][prop];
+      groups[group][prop] = Number(char[group][prop]);
     }
   }
   return groups;

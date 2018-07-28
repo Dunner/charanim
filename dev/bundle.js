@@ -14,6 +14,7 @@ var animation = {}
 
 
 function initAnimation(keyframes, char) {
+  console.log(keyframes)
   animation = {
     keyframes: [],
     msBetweenFrames: 10,
@@ -49,15 +50,14 @@ function animationPlay() {
 
   for (var g in animation.currentAnimations) {
     for (var prop in animation.currentAnimations[g]) {
+      if(!animation.currentAnimations[g][prop].to) {
+        continue;
+      }
       var values = animation.currentAnimations[g][prop];
-
-      if (character[g][prop] < animation.currentAnimations[g][prop].to) {
+      if (character[g][prop] !== animation.currentAnimations[g][prop].to) {
         character[g][prop] = character[g][prop] + values.stepPerFrame;
-      }
-      if (character[g][prop] > animation.currentAnimations[g][prop].to) {
-        character[g][prop] = character[g][prop] - values.stepPerFrame;
-      }
 
+      }
       if (Math.round(character[g][prop]) == Math.round(values.to)) {
         delete animation.currentAnimations[g][prop];
       }
@@ -81,29 +81,44 @@ function processKeyframe(keyframe, frameCurrent) {
     }
   }
 
-  //Add info from next relevant keyframe
+  //Check next keyframe to add .to to props
+  var currentKeyFrame = animation.keyframes.indexOf(keyframe);
+  if (currentKeyFrame == animation.keyframes.length-1) {
+    clearInterval(animationInterval);
+    return;
+  }
   for (var g in animation.currentAnimations) {
     var currentGroupAnim = animation.currentAnimations[g];
-    for (var i = animation.keyframes.indexOf(keyframe)+1; i < animation.keyframes.length; i++) {
-      var nextGroupAnimInfo = animation.keyframes[i].groups[g];
-      for (var prop in nextGroupAnimInfo) {
 
-        if (currentGroupAnim[prop] == undefined) {continue;}
-        if (currentGroupAnim[prop].to) {continue;}
-        if (currentGroupAnim[prop].from == nextGroupAnimInfo[prop]) {continue;}
+    /* LOOP THROUGH ALL UPCOMING KEYFRAMES TO ADD NEXT KEYFRAME WITH AN ANIMATION(.to)
+    for (var i = animation.keyframes.indexOf(keyframe)+1; i < animation.keyframes.length; i++) {
+      var nextGroupAnimInfo = animation.keyframes[indexOf(keyframe)+1].groups[g];
+    }
+    */
+
+    var nextKeyFrame = animation.keyframes[animation.keyframes.indexOf(keyframe)+1];
+    var nextGroupAnimInfo = nextKeyFrame.groups[g];
+    for (var prop in nextGroupAnimInfo) {
+      if (currentGroupAnim[prop] == undefined) {continue;}
+      if (!currentGroupAnim[prop].to) {
+        if (currentGroupAnim[prop].from === nextGroupAnimInfo[prop]) {
+          continue;
+        }
+        console.log('keyframe: ', currentKeyFrame, '. animate', g, prop)
         currentGroupAnim[prop].to = nextGroupAnimInfo[prop];
 
         var aDiff = angleDiff(currentGroupAnim[prop].from, currentGroupAnim[prop].to)
-        var framesToPlayWith = (animation.keyframes[i].time - frameCurrent) / animation.msBetweenFrames;
+        var framesToPlayWith = (nextKeyFrame.time - frameCurrent) / animation.msBetweenFrames;
         currentGroupAnim[prop].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
         currentGroupAnim[prop].current = currentGroupAnim[prop].from;
-        console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
+        currentGroupAnim[prop].aDiff = aDiff;
+        //console.log(aDiff.direction * (aDiff.distance / framesToPlayWith))
       }
     }
+    
   }
-  if (animation.keyframes.indexOf(keyframe) == animation.keyframes.length-1) {
-    clearInterval(animationInterval);
-  }
+
+
 }
 
 
@@ -119,7 +134,7 @@ function createKeyframeObject(char){
     groups[group] = {};
     for (var index in props) {
       var prop = props[index];
-      groups[group][prop] = char[group][prop];
+      groups[group][prop] = Number(char[group][prop]);
     }
   }
   return groups;
@@ -362,7 +377,28 @@ var paperdoll = {
       rotation: 0,
       radius: 10
     }],
-    connectsTo: 'armLeftUpper'
+    connectsTo: 'armLeftUpper',
+    connectionsFor: {
+      'handLeft': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  handLeft: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 30,
+      top: 1,
+      left: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'armLeftLower'
   },
   armRightUpper: {
     xscale: 1,
@@ -396,7 +432,28 @@ var paperdoll = {
       rotation: 0,
       radius: 10
     }],
-    connectsTo: 'armRightUpper'
+    connectsTo: 'armRightUpper',
+    connectionsFor: {
+      'handRight': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  handRight: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 30,
+      top: 1,
+      left: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'armRightLower'
   },
   legLeftUpper: {
     xscale: 1,
@@ -475,7 +532,7 @@ var timeline = {}
 function updateTimeline(keyframes) {
   timeline.keyframes = keyframes;
   (timeline.keyframes).sort(function(a, b) { 
-      return a.time - b.time;
+    return a.time - b.time;
   })
   $('#timeline__keyframes').empty();
   for(index in timeline.keyframes) {
@@ -528,6 +585,7 @@ function selectKeyframe(index){
     $(keyframe.element).addClass('keyframe--selected');
   }
   timeline.keyframeSelected = keyframe;
+  selectTarget(window.currentPropNode);
 
 }
 
@@ -580,6 +638,10 @@ $('#options__play').on('click', function(e){
   initAnimation(timeline.keyframes, character);
 })
 
+$('#options__play-salute').on('click', function(e){
+  initAnimation(presetAnimations.wavesalute.keyframes, character);
+})
+
 
 var rotatedragging;
 $('#tools__circle').on('mousedown',function (event) {
@@ -592,7 +654,7 @@ $('#tools__circle').on('mousedown',function (event) {
       var angle = normalizeAngle(pointDirection(circleCenter,window.mouseLocation)-90);
       character[window.currentProp].rotation = Number(angle).toFixed(2);
       angle = normalizeAngle(character[window.currentProp].rotation);
-      angle = normalizeAngle(angle+90);
+      angle = normalizeAngle(Number(angle)+90)
       updateCurrentKeyframe();
       $('#tools__circle').css({
         '-webkit-transform' : 'rotate('+angle+'deg)',
@@ -635,102 +697,7 @@ $('#drawing').on('mousedown',function(event) {
 
   if (event.target.nodeName == 'rect' && event.which == 1) {
     var node = event.target;
-    for (var partIndex=0; (node=node.previousSibling); partIndex++);
-    var prop = event.target.id;
-    var part = character[prop].parts[partIndex];
-    window.currentProp = prop;
-    window.currentPropPart = part;
-
-    var axle = character[prop].wrapper.last();
-    var axlePosition = axle.node.getBoundingClientRect();
-    $('#tools').css({
-      left: (axlePosition.left + axle.width()/2) - $('#tools')[0].clientWidth/2,
-      top: (axlePosition.top + axle.height()/2) - $('#tools')[0].clientHeight/2
-    })
-    var angle = normalizeAngle(character[prop].rotation);
-    var angle = normalizeAngle(angle+90);
-    console.log(angle)
-    $('#tools__circle').css({
-      '-webkit-transform' : 'rotate('+Number(angle) +'deg)',
-         '-moz-transform' : 'rotate('+Number(angle) +'deg)',  
-          '-ms-transform' : 'rotate('+Number(angle) +'deg)',  
-           '-o-transform' : 'rotate('+Number(angle) +'deg)',  
-              'transform' : 'rotate('+Number(angle) +'deg)',  
-                   'zoom' : 1
-    });
-
-/*
-    clearInterval(rotatedragging);
-    rotatedragging = setInterval(function () {
-      var circleCenter = {
-        y: event.target.offsetTop+event.target.parentElement.offsetTop+event.target.offsetHeight/2,
-        x: event.target.offsetLeft+event.target.parentElement.offsetLeft+event.target.offsetWidth/2
-      }
-      var angle = normalizeAngle(pointDirection(lastClickCords,window.mouseLocation)-90);
-      character[window.currentProp].rotation = angle;
-      updateCurrentKeyframe();
-      $('#tools__circle').css({
-        '-webkit-transform' : 'rotate('+angle+'deg)',
-           '-moz-transform' : 'rotate('+angle+'deg)',  
-            '-ms-transform' : 'rotate('+angle+'deg)',  
-             '-o-transform' : 'rotate('+angle+'deg)',  
-                'transform' : 'rotate('+angle+'deg)',  
-                     'zoom' : 1
-      });
-
-    }, 100);
-*/
-    var options_width = part.data.width;
-    var options_height = part.data.height;
-    var options_rotation = part.data.rotation;
-    var options_top = part.data.top;
-    var options_left = part.data.left;
-    var options_right = part.data.right;
-    var options_bottom = part.data.bottom;
-    var options_radius = part.data.radius;
-    var options_fill = part.data.fill;
-
-    //group
-    $('#options__group').empty();
-    $('#options__group').append('<h3>'+prop+'</h3>');
-    for (var key in character[prop]) {
-      if (typeof(character[prop][key]) !== 'object') {
-        $('#options__group').append('<label for="options__group--'+key+'">'+key+'</label><input id="options__group--'+key+'" value="'+character[prop][key]+'"/><br>');
-        
-      }
-    }
-    $('#options__group--xscale').on('keyup', function(e){character[prop]['xscale'] = Number($(this).val()); updateCurrentKeyframe()});
-    $('#options__group--yscale').on('keyup', function(e){character[prop]['yscale'] = Number($(this).val()); updateCurrentKeyframe()});
-    $('#options__group--rotation').on('keyup', function(e){character[prop]['rotation'] = Number($(this).val()); updateCurrentKeyframe()});
-
-
-    //parts
-    $('#options__part').empty();
-    $('#options__part').append('<h3>'+' part: '+ partIndex+'</h3>');
-    for (var key in part.data) {
-      $('#options__part').append('<label for="options__part--'+key+'">'+key+'</label><input id="options__part--'+key+'" value="'+part.data[key]+'"/><br>');
-    }
-
-    $('#options__part--width').val(options_width);
-    $('#options__part--height').val(options_height);
-    $('#options__part--rotation').val(options_rotation);
-    $('#options__part--top').val(options_top);
-    $('#options__part--left').val(options_left);
-    $('#options__part--right').val(options_right);
-    $('#options__part--bottom').val(options_bottom);
-    $('#options__part--radius').val(options_radius);
-    $('#options__part--fill').val(options_fill);
-    
-    $('#options__part--width').on('keyup', function(e){part.data.width = Number($(this).val())});
-    $('#options__part--height').on('keyup', function(e){part.data.height = Number($(this).val())});
-    $('#options__part--rotation').on('keyup', function(e){part.data.rotation = Number($(this).val())});
-    $('#options__part--top').on('keyup', function(e){part.data.top = Number($(this).val())});
-    $('#options__part--left').on('keyup', function(e){part.data.left = Number($(this).val())});
-    $('#options__part--right').on('keyup', function(e){part.data.right = Number($(this).val())});
-    $('#options__part--bottom').on('keyup', function(e){part.data.bottom = Number($(this).val())});
-    $('#options__part--radius').on('keyup', function(e){part.data.radius = Number($(this).val())});
-    $('#options__part--fill').on('keyup', function(e){part.data.fill = Number($(this).val())});
-
+    selectTarget(node);
   } else {
     $('#tools').css({
       left: -999,
@@ -738,6 +705,87 @@ $('#drawing').on('mousedown',function(event) {
     })
   }
 });
+
+function selectTarget(target) {
+  if(!target) {return null;}
+  let node = target;
+  for (var partIndex=0; (node=node.previousSibling); partIndex++);
+  var prop = target.id;
+  var part = character[prop].parts[partIndex];
+  window.currentProp = prop;
+  window.currentPropPart = part;
+  window.currentPropNode = target;
+
+  var axle = character[prop].wrapper.last();
+  var axlePosition = axle.node.getBoundingClientRect();
+  $('#tools').css({
+    left: (axlePosition.left + axle.width()/2) - $('#tools')[0].clientWidth/2,
+    top: (axlePosition.top + axle.height()/2) - $('#tools')[0].clientHeight/2
+  })
+  var angle = normalizeAngle(character[prop].rotation);
+  angle = normalizeAngle(Number(angle)+90)
+  $('#tools__circle').css({
+    '-webkit-transform' : 'rotate('+Number(angle) +'deg)',
+       '-moz-transform' : 'rotate('+Number(angle) +'deg)',  
+        '-ms-transform' : 'rotate('+Number(angle) +'deg)',  
+         '-o-transform' : 'rotate('+Number(angle) +'deg)',  
+            'transform' : 'rotate('+Number(angle) +'deg)',  
+                 'zoom' : 1
+  });
+
+
+  var options_width = part.data.width;
+  var options_height = part.data.height;
+  var options_rotation = part.data.rotation;
+  var options_top = part.data.top;
+  var options_left = part.data.left;
+  var options_right = part.data.right;
+  var options_bottom = part.data.bottom;
+  var options_radius = part.data.radius;
+  var options_fill = part.data.fill;
+
+  //group
+  $('#options__group').empty();
+  $('#options__group').append('<h3>'+prop+'</h3>');
+  for (var key in character[prop]) {
+    if (typeof(character[prop][key]) !== 'object') {
+      $('#options__group').append('<label for="options__group--'+key+'">'+key+'</label><input id="options__group--'+key+'" value="'+character[prop][key]+'"/><br>');
+      
+    }
+  }
+  $('#options__group--xscale').on('keyup', function(e){character[prop]['xscale'] = Number($(this).val()); updateCurrentKeyframe()});
+  $('#options__group--yscale').on('keyup', function(e){character[prop]['yscale'] = Number($(this).val()); updateCurrentKeyframe()});
+  $('#options__group--rotation').on('keyup', function(e){character[prop]['rotation'] = Number($(this).val()); updateCurrentKeyframe()});
+
+
+  //parts
+  $('#options__part').empty();
+  $('#options__part').append('<h3>'+' part: '+ partIndex+'</h3>');
+  for (var key in part.data) {
+    $('#options__part').append('<label for="options__part--'+key+'">'+key+'</label><input id="options__part--'+key+'" value="'+part.data[key]+'"/><br>');
+  }
+
+  $('#options__part--width').val(options_width);
+  $('#options__part--height').val(options_height);
+  $('#options__part--rotation').val(options_rotation);
+  $('#options__part--top').val(options_top);
+  $('#options__part--left').val(options_left);
+  $('#options__part--right').val(options_right);
+  $('#options__part--bottom').val(options_bottom);
+  $('#options__part--radius').val(options_radius);
+  $('#options__part--fill').val(options_fill);
+  
+  $('#options__part--width').on('keyup', function(e){part.data.width = Number($(this).val())});
+  $('#options__part--height').on('keyup', function(e){part.data.height = Number($(this).val())});
+  $('#options__part--rotation').on('keyup', function(e){part.data.rotation = Number($(this).val())});
+  $('#options__part--top').on('keyup', function(e){part.data.top = Number($(this).val())});
+  $('#options__part--left').on('keyup', function(e){part.data.left = Number($(this).val())});
+  $('#options__part--right').on('keyup', function(e){part.data.right = Number($(this).val())});
+  $('#options__part--bottom').on('keyup', function(e){part.data.bottom = Number($(this).val())});
+  $('#options__part--radius').on('keyup', function(e){part.data.radius = Number($(this).val())});
+  $('#options__part--fill').on('keyup', function(e){part.data.fill = Number($(this).val())});
+
+}
 
 
 function update() {
@@ -920,7 +968,7 @@ function lengthDir(length, direction) { //vector, magnitude
 }
 
 function normalizeAngle(angle) {
-  return (angle+360)%360;
+  return Number((angle+360)%360).toFixed(2);
 }
 
 function getOffset( elem ) {
@@ -939,4 +987,490 @@ function getOffset( elem ) {
     left: offsetLeft,
     top: offsetTop
   };
+}
+window.paperdoll = {
+  belly: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 60,
+      height: 50,
+      top: 'center',
+      left: 'center',
+      rotation: 0,
+      radius: 15
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'legLeftUpper': {
+        'left': 17,
+        'bottom': 10
+      },
+      'legRightUpper': {
+        'right': 17,
+        'bottom': 10
+      }
+    }
+  },
+  torso: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 1,
+    parts: [{
+      width: 70,
+      height: 80,
+      top: 'center',
+      right: 'center',
+      rotation: 0,
+      radius: 30
+    }],
+    connectionsFor: {
+      'neck': {
+        'left': 'center',
+        'top': 2
+      },
+      'armLeftUpper': {
+        'left': 7,
+        'top': 15
+      },
+      'armRightUpper': {
+        'right': 7,
+        'top': 15
+      },
+      'belly': {
+        'left': 'center',
+        'bottom': 0
+      }
+    }
+  },
+  neck: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 50,
+      left: 'center',
+      bottom: 10,
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'head': {
+        'left': 'center',
+        'top': 5
+      }
+    }
+  },
+  head: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 50,
+      height: 70,
+      left: 'center',
+      bottom: 'center',
+      rotation: 0,
+      radius: 20,
+      fill: '#f7cbc4'
+    }],
+    connectsTo: 'neck'
+  },
+  armLeftUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 58,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'armLeftLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  armLeftLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 58,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'armLeftUpper',
+    connectionsFor: {
+      'handLeft': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  handLeft: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 30,
+      top: 1,
+      left: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'armLeftLower'
+  },
+  armRightUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 58,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'torso',
+    connectionsFor: {
+      'armRightLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  armRightLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 58,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'armRightUpper',
+    connectionsFor: {
+      'handRight': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  handRight: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 30,
+      top: 1,
+      left: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'armRightLower'
+  },
+  legLeftUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legLeftLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legLeftLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legLeftUpper'
+  },
+  legRightUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legRightLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legRightLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legRightUpper'
+  },
+};
+
+window.presetAnimations = {
+  wavesalute: {
+    by: 'jonathan',
+    keyframes: [
+      {
+        "time": 0,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 1,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 3190,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 1,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 158.55,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 181.64,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 4960,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 1,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": -2.24999999999993,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      }
+    ]
+  }
 }

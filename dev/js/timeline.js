@@ -5,7 +5,7 @@ var timeline = {}
 function updateTimeline(keyframes) {
   timeline.keyframes = keyframes;
   (timeline.keyframes).sort(function(a, b) { 
-      return a.time - b.time;
+    return a.time - b.time;
   })
   $('#timeline__keyframes').empty();
   for(index in timeline.keyframes) {
@@ -58,6 +58,7 @@ function selectKeyframe(index){
     $(keyframe.element).addClass('keyframe--selected');
   }
   timeline.keyframeSelected = keyframe;
+  selectTarget(window.currentPropNode);
 
 }
 

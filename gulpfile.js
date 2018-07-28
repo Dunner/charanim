@@ -15,6 +15,7 @@
   var paths = { 
     dev:      'dev/', 
     js:       'dev/js/**/*.js', 
+    data:     'dev/data/**/*.js', 
     css:      'dev/css', 
     styles:   'dev/styles', 
     img:      'dev/images',
@@ -38,7 +39,8 @@
     return gulp.src([ 
         paths.jquery,
         paths.svgjs,
-        paths.js
+        paths.js,
+        paths.data
       ])
       .pipe(concat('bundle.js'))
       .pipe(gulp.dest(paths.dev));

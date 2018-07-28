@@ -1,4 +1,4 @@
-var paperdoll = {
+window.paperdoll = {
   belly: {
     xscale: 1,
     yscale: 1,

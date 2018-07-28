@@ -51,6 +51,7 @@ body {
   height: 20px;
   background: #fff;
   position: absolute;
+  top: -webkit-calc(50% - 10px);
   top: calc(50% - 10px);
 }
 #timeline #timeline__keyframes .keyframe:hover {
@@ -96,6 +97,7 @@ body {
   left: 50%;
   height: 4px;
   width: 50%;
+  top: -webkit-calc(50% - 2px);
   top: calc(50% - 2px);
   background: #0f0;
 }
@@ -103,5 +105,3 @@ body {
   width: 33%;
   float: left;
 }
-
-/*# sourceMappingURL=style.css.map */

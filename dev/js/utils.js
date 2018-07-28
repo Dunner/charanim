@@ -98,7 +98,7 @@ function lengthDir(length, direction) { //vector, magnitude
 }
 
 function normalizeAngle(angle) {
-  return (angle+360)%360;
+  return Number((angle+360)%360).toFixed(2);
 }
 
 function getOffset( elem ) {
