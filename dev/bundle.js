@@ -156,10 +156,11 @@ class PaperdollDisplayer {
     if (this.animation.keyframes.length == 0) {
       this.animation.keyframes.unshift(this.freshState)
     }
+    this.poseCharacter(this.animation.keyframes[0]);
+    console.log(this.animation.keyframes)
     
     clearInterval(this.animationInterval);
     this.animationInterval = setInterval(function(){
-
 
       if (currentKeyFrame === this.animation.keyframes.length-1) {
         //If animation is done
@@ -471,17 +472,19 @@ class PaperdollTimelineEditor {
 
   constructor(paperdollDisplayer) {
     this.keyframedragging;
-    this.basisPoint = $('#timeline')[0].offsetWidth/10000;
     this.timeline = {}
     this.paperdollDisplayer = paperdollDisplayer;
+    this.ui();
+
     setTimeout(function(){
+      this.basisPoint = $('#timeline')[0].offsetWidth/10000;
+
       this.updateTimeline(this.paperdollDisplayer.animation.keyframes)
       this.paperdollDisplayer.toggleVisibleConnectionPoints(true);
       this.paperdollDisplayer.toggleVisibleAxlePoints(true);
-      this.ui();
+      this.selectKeyframe(0)
 
-    }.bind(this),300)
-    this.createSelectListOfAnimations();
+    }.bind(this),300);
   }
 
   createSelectListOfAnimations() {
@@ -493,7 +496,7 @@ class PaperdollTimelineEditor {
         .attr("value", animationName)
         .text(animationName));
     }.bind(this))
-    $("#options").append(this.animationSelectorInput);
+    $("#timeline__actions").append(this.animationSelectorInput);
   }
 
 
@@ -651,6 +654,41 @@ class PaperdollTimelineEditor {
 
 
   ui() {
+
+    $('<div/>', {
+      id: 'timeline',
+    }).appendTo('#timeline-editor');
+      $('<div/>', {
+        id: 'timeline__keyframes',
+      }).appendTo('#timeline');
+      $('<div/>', {
+        id: 'timeline__indicator',
+      }).appendTo('#timeline');
+
+    $('<div/>', {
+      id: 'options__group',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+    $('<div/>', {
+      id: 'options__part',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+
+    $('<div/>', {
+      id: 'timeline__actions',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+      $('<button/>', {
+        id: 'options__play',
+        text: 'Play'
+      }).appendTo('#timeline__actions');
+      $('<button/>', {
+        id: 'options__save-copy',
+        text: 'Save&Copy'
+      }).appendTo('#timeline__actions');
+
+    this.createSelectListOfAnimations();
+
     $('#options__play').on('click', function(e){
       this.paperdollDisplayer.playAnimation({keyframes: this.timeline.keyframes},false,false,this);
     }.bind(this))
@@ -658,7 +696,7 @@ class PaperdollTimelineEditor {
     $('#options__save-copy').on('click', function(e){
       var dummy = document.createElement("input");
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', JSON.stringify(this.timeline.keyframes));
+      dummy.setAttribute('value', JSON.stringify(this.timeline));
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
@@ -921,6 +959,30 @@ window.paperdoll = {
       'rightEye': {
         'left': 'center',
         'top': 'center'
+      },
+      'nose': {
+        'left': 'center',
+        'top': 'center'
+      },
+      'mouth': {
+        'left': 'center',
+        'top': 'center'
+      },
+      'leftEar': {
+        'left': 0,
+        'top': 'center'
+      },
+      'rightEar': {
+        'right': 0,
+        'top': 'center'
+      },
+      'hair': {
+        'left': 'center',
+        'top': 5
+      },
+      'hat': {
+        'left': 'center',
+        'top': 5
       }
     }
   },
@@ -949,6 +1011,102 @@ window.paperdoll = {
       width: 12,
       height: 10,
       right: -4,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  nose: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 8,
+      height: 17,
+      right: 'center',
+      top: 1,
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'head'
+  },
+  mouth: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
+      top: -20,
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  leftEar: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 10,
+      height: 12,
+      left: 5,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#f7cbc4'
+    }],
+    connectsTo: 'head'
+  },
+  rightEar: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 10,
+      height: 12,
+      right: 5,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#f7cbc4'
+    }],
+    connectsTo: 'head'
+  },
+  hair: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  hat: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
       bottom: 'center',
       rotation: 0,
       radius: 10,

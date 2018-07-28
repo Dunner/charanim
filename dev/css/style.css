@@ -69,18 +69,18 @@ body {
 #timeline #timeline__keyframes .keyframe--selected {
   background: #0f0;
 }
-#options {
-  height: 280px;
+#timeline-editor {
+  height: 360px;
   background: #333;
   color: #fff;
 }
-#options label {
+#timeline-editor label {
   display: block;
 }
-#options input {
+#timeline-editor input {
   margin-bottom: 5px;
 }
-#options:after {
+#timeline-editor:after {
   content: '';
   display: block;
   clear: both;

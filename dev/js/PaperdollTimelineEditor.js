@@ -2,17 +2,19 @@ class PaperdollTimelineEditor {
 
   constructor(paperdollDisplayer) {
     this.keyframedragging;
-    this.basisPoint = $('#timeline')[0].offsetWidth/10000;
     this.timeline = {}
     this.paperdollDisplayer = paperdollDisplayer;
+    this.ui();
+
     setTimeout(function(){
+      this.basisPoint = $('#timeline')[0].offsetWidth/10000;
+
       this.updateTimeline(this.paperdollDisplayer.animation.keyframes)
       this.paperdollDisplayer.toggleVisibleConnectionPoints(true);
       this.paperdollDisplayer.toggleVisibleAxlePoints(true);
-      this.ui();
+      this.selectKeyframe(0)
 
-    }.bind(this),300)
-    this.createSelectListOfAnimations();
+    }.bind(this),300);
   }
 
   createSelectListOfAnimations() {
@@ -24,7 +26,7 @@ class PaperdollTimelineEditor {
         .attr("value", animationName)
         .text(animationName));
     }.bind(this))
-    $("#options").append(this.animationSelectorInput);
+    $("#timeline__actions").append(this.animationSelectorInput);
   }
 
 
@@ -182,6 +184,41 @@ class PaperdollTimelineEditor {
 
 
   ui() {
+
+    $('<div/>', {
+      id: 'timeline',
+    }).appendTo('#timeline-editor');
+      $('<div/>', {
+        id: 'timeline__keyframes',
+      }).appendTo('#timeline');
+      $('<div/>', {
+        id: 'timeline__indicator',
+      }).appendTo('#timeline');
+
+    $('<div/>', {
+      id: 'options__group',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+    $('<div/>', {
+      id: 'options__part',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+
+    $('<div/>', {
+      id: 'timeline__actions',
+      class: 'options__section'
+    }).appendTo('#timeline-editor');
+      $('<button/>', {
+        id: 'options__play',
+        text: 'Play'
+      }).appendTo('#timeline__actions');
+      $('<button/>', {
+        id: 'options__save-copy',
+        text: 'Save&Copy'
+      }).appendTo('#timeline__actions');
+
+    this.createSelectListOfAnimations();
+
     $('#options__play').on('click', function(e){
       this.paperdollDisplayer.playAnimation({keyframes: this.timeline.keyframes},false,false,this);
     }.bind(this))
@@ -189,7 +226,7 @@ class PaperdollTimelineEditor {
     $('#options__save-copy').on('click', function(e){
       var dummy = document.createElement("input");
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', JSON.stringify(this.timeline.keyframes));
+      dummy.setAttribute('value', JSON.stringify(this.timeline));
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);

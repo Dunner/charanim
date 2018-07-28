@@ -19,23 +19,9 @@
         </div>
       </div>
 
-      <div id="uibox">
-
-        <div id="timeline">
-          <div id="timeline__keyframes"></div>
-          <div id="timeline__indicator"></div>
-        </div>
-
-        <div id="options">
-          <div id="options__group" class="options__section"></div>
-          <div id="options__part" class="options__section"></div>
-          <div class="options__section">
-            <button id="options__play">Play</button>
-            <button id="options__save-copy">Save&Copy</button>
-          </div>
-        </div>
-
+      <div id="paperdoll-ui">
       </div>
+
 
       <script src="bundle.js"></script>  
       <script>
@@ -43,8 +29,13 @@
           window.paperdollDisplayer = new PaperdollDisplayer(
             window.paperdoll, 
             'drawing');
+          
+          $('<div/>', {
+            id: 'timeline-editor',
+          }).appendTo('#paperdoll-ui');
 
-          window.paperdollTimelineEditor = new PaperdollTimelineEditor(paperdollDisplayer);
+          window.paperdollTimelineEditor = new PaperdollTimelineEditor(paperdollDisplayer,
+            'timeline-editor');
 
           /*
           paperdollDisplayer.playAnimation(

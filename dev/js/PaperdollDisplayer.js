@@ -148,10 +148,11 @@ class PaperdollDisplayer {
     if (this.animation.keyframes.length == 0) {
       this.animation.keyframes.unshift(this.freshState)
     }
+    this.poseCharacter(this.animation.keyframes[0]);
+    console.log(this.animation.keyframes)
     
     clearInterval(this.animationInterval);
     this.animationInterval = setInterval(function(){
-
 
       if (currentKeyFrame === this.animation.keyframes.length-1) {
         //If animation is done

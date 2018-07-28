@@ -165,6 +165,30 @@ window.paperdoll = {
       'rightEye': {
         'left': 'center',
         'top': 'center'
+      },
+      'nose': {
+        'left': 'center',
+        'top': 'center'
+      },
+      'mouth': {
+        'left': 'center',
+        'top': 'center'
+      },
+      'leftEar': {
+        'left': 0,
+        'top': 'center'
+      },
+      'rightEar': {
+        'right': 0,
+        'top': 'center'
+      },
+      'hair': {
+        'left': 'center',
+        'top': 5
+      },
+      'hat': {
+        'left': 'center',
+        'top': 5
       }
     }
   },
@@ -193,6 +217,102 @@ window.paperdoll = {
       width: 12,
       height: 10,
       right: -4,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  nose: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 8,
+      height: 17,
+      right: 'center',
+      top: 1,
+      rotation: 0,
+      radius: 10,
+      fill: '#c8a7a5'
+    }],
+    connectsTo: 'head'
+  },
+  mouth: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
+      top: -20,
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  leftEar: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 10,
+      height: 12,
+      left: 5,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#f7cbc4'
+    }],
+    connectsTo: 'head'
+  },
+  rightEar: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 10,
+      height: 12,
+      right: 5,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#f7cbc4'
+    }],
+    connectsTo: 'head'
+  },
+  hair: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  hat: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 17,
+      height: 6,
+      right: 'center',
       bottom: 'center',
       rotation: 0,
       radius: 10,
