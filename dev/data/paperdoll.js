@@ -23,6 +23,74 @@ window.paperdoll = {
       }
     }
   },
+  legLeftUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legLeftLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legLeftLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legLeftUpper'
+  },
+  legRightUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legRightLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legRightLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legRightUpper'
+  },
   torso: {
     xscale: 1,
     yscale: 1,
@@ -241,73 +309,5 @@ window.paperdoll = {
       fill: '#c8a7a5'
     }],
     connectsTo: 'armRightLower'
-  },
-  legLeftUpper: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'belly',
-    connectionsFor: {
-      'legLeftLower': {
-        'left': 'center',
-        'bottom': 10
-      }
-    }
-  },
-  legLeftLower: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'legLeftUpper'
-  },
-  legRightUpper: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'belly',
-    connectionsFor: {
-      'legRightLower': {
-        'left': 'center',
-        'bottom': 10
-      }
-    }
-  },
-  legRightLower: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'legRightUpper'
   },
 };

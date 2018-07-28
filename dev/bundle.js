@@ -15,6 +15,8 @@ class PaperdollDisplayer {
     this.doll = {};
     this.animationInterval;
     this.animation = {};
+    this.connectionPoints = [];
+    this.axlePoints = [];
 
     this.canvasSize = {
       width: this.DOMElement.width(),
@@ -31,7 +33,7 @@ class PaperdollDisplayer {
       groups: this.createKeyframeObject(this.doll)
     };
 
-    this.playAnimation({keyframes:[]})
+    this.playAnimation({keyframes:[], cameraSetting: 'body'})
   }
 
   /*
@@ -82,20 +84,34 @@ class PaperdollDisplayer {
   }
 
 
-  drawAxlePoint(limbName) {
-    this.doll[limbName].axle = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: 0.2 });
+  drawAxlePoint(limbName, visible) {
+    this.doll[limbName].axle = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: visible ? 0.2 : 0 });
+    this.axlePoints.push(this.doll[limbName].axle);
   }
-  drawConnectionPoints(limbName) {
+  drawConnectionPoints(limbName, visible) {
     //connectionpoints
     for (var connectionFor in this.dollConfig[limbName].connectionsFor) {
       var connection = this.dollConfig[limbName].connectionsFor[connectionFor];
-      connection.point = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: 0.2 });
+      connection.point = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: visible ? 0.2 : 0 });
       connection.point.center(
         this.doll[limbName].wrapper.width()/2,
         this.doll[limbName].wrapper.height()/2
       );
+      this.connectionPoints.push(connection.point);
       //doll[limbName].group.add(connection.point);
     }
+  }
+
+  toggleVisibleConnectionPoints(visible) {
+    this.connectionPoints.forEach(function(connectionPoint) {
+      connectionPoint.attr({ fill: '#f00', opacity: visible ? 0.2 : 0 });
+    });
+  }
+
+  toggleVisibleAxlePoints(visible) {
+    this.axlePoints.forEach(function(axlePoint) {
+      axlePoint.attr({ fill: '#0f0', opacity: visible ? 0.2 : 0 });
+    });
   }
 
   /*
@@ -122,6 +138,9 @@ class PaperdollDisplayer {
     if(config.cameraSetting) {
       if (config.cameraSetting === 'face') {
         this.cameraZoomToLimb('head', 2, 750)
+      }
+      if (config.cameraSetting === 'body') {
+        this.cameraZoomToLimb('torso', 1.5, 750)
       }
     }
     this.animation = {
@@ -454,12 +473,27 @@ class PaperdollTimelineEditor {
     this.keyframedragging;
     this.basisPoint = $('#timeline')[0].offsetWidth/10000;
     this.timeline = {}
-    this.ui();
     this.paperdollDisplayer = paperdollDisplayer;
     setTimeout(function(){
       this.updateTimeline(this.paperdollDisplayer.animation.keyframes)
+      this.paperdollDisplayer.toggleVisibleConnectionPoints(true);
+      this.paperdollDisplayer.toggleVisibleAxlePoints(true);
+      this.ui();
 
     }.bind(this),300)
+    this.createSelectListOfAnimations();
+  }
+
+  createSelectListOfAnimations() {
+    this.animationSelectorInput = $("<select></select>").attr("id", "animations").attr("name", "animations");
+    
+    Object.keys(presetAnimations).forEach(function(animationName){
+      this.animationSelectorInput
+        .append($("<option></option>")
+        .attr("value", animationName)
+        .text(animationName));
+    }.bind(this))
+    $("#options").append(this.animationSelectorInput);
   }
 
 
@@ -621,8 +655,13 @@ class PaperdollTimelineEditor {
       this.paperdollDisplayer.playAnimation({keyframes: this.timeline.keyframes},false,false,this);
     }.bind(this))
 
-    $('#options__play-salute').on('click', function(e){
-      //this.paperdollDisplayer.playAnimation(presetAnimations.wavesalute.keyframes);
+    $('#options__save-copy').on('click', function(e){
+      var dummy = document.createElement("input");
+      document.body.appendChild(dummy);
+      dummy.setAttribute('value', JSON.stringify(this.timeline.keyframes));
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
     }.bind(this))
 
     $('#timeline__keyframes').on('mousedown',function (event) {
@@ -677,13 +716,11 @@ class PaperdollTimelineEditor {
         x:event.clientX,
         y:event.clientY
       }
-      return false;
     });
 
     $(document).on('mouseup',function (event) {
       clearInterval(this.keyframedragging)
       clearInterval(this.rotatedragging);
-      return false;
     }.bind(this));
 
     $(document).on('mousemove',function (event) {
@@ -703,6 +740,15 @@ class PaperdollTimelineEditor {
           top: -999
         })
       }
+    }.bind(this));
+
+    $( ".target" ).change(function() {
+      alert( "Handler for .change() called." );
+    });
+
+    $( this.animationSelectorInput ).change(function(event) {
+      var animationName = event.target.value;
+      this.paperdollDisplayer.playAnimation(presetAnimations[animationName],false,false,this);
     }.bind(this));
 
   }
@@ -732,6 +778,74 @@ window.paperdoll = {
         'bottom': 10
       }
     }
+  },
+  legLeftUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legLeftLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legLeftLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legLeftUpper'
+  },
+  legRightUpper: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'belly',
+    connectionsFor: {
+      'legRightLower': {
+        'left': 'center',
+        'bottom': 10
+      }
+    }
+  },
+  legRightLower: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    parts: [{
+      width: 20,
+      height: 60,
+      top: 10,
+      left: 'center',
+      rotation: 0,
+      radius: 10
+    }],
+    connectsTo: 'legRightUpper'
   },
   torso: {
     xscale: 1,
@@ -952,74 +1066,6 @@ window.paperdoll = {
     }],
     connectsTo: 'armRightLower'
   },
-  legLeftUpper: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'belly',
-    connectionsFor: {
-      'legLeftLower': {
-        'left': 'center',
-        'bottom': 10
-      }
-    }
-  },
-  legLeftLower: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'legLeftUpper'
-  },
-  legRightUpper: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'belly',
-    connectionsFor: {
-      'legRightLower': {
-        'left': 'center',
-        'bottom': 10
-      }
-    }
-  },
-  legRightLower: {
-    xscale: 1,
-    yscale: 1,
-    rotation: 0,
-    parts: [{
-      width: 20,
-      height: 60,
-      top: 10,
-      left: 'center',
-      rotation: 0,
-      radius: 10
-    }],
-    connectsTo: 'legRightUpper'
-  },
 };
 window.presetAnimations = {
   wavesalute: {
@@ -1234,5 +1280,660 @@ window.presetAnimations = {
         }
       }
     ]
+  },
+  tjoho: {
+    by: 'jonathan',
+    cameraSetting: 'body',
+    "keyframes": [
+      {
+        "time": 0,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 1,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "leftEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "rightEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handLeft": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handRight": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 1270,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 1,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "leftEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "rightEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 63.43,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handLeft": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 293.96,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handRight": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 287.87,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 1470,
+        "groups": {
+          "belly": {
+            "rotation": 9.46,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 19.98,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "leftEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "rightEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 63.43,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 74.05,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handLeft": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 293.96,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 327.99,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handRight": {
+            "rotation": 282.5,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 287.87,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 1660,
+        "groups": {
+          "belly": {
+            "rotation": 8.630175438596485,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 19.647017543859654,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "leftEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "rightEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 62.939313441083144,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 74.05000000000003,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handLeft": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": -66.04000000000016,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": -32.57157894736841,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handRight": {
+            "rotation": -78.85964912280704,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 311.19,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 296.57,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": -72.12999999999981,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 81.25,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      },
+      {
+        "time": 2850,
+        "groups": {
+          "belly": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "torso": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "neck": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "head": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "leftEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "rightEye": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftUpper": {
+            "rotation": 18.43,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armLeftLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handLeft": {
+            "rotation": 55.01,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightUpper": {
+            "rotation": 348.69,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "armRightLower": {
+            "rotation": 0,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "handRight": {
+            "rotation": -78.85964912280704,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftUpper": {
+            "rotation": 354.81,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legLeftLower": {
+            "rotation": 8.13,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightUpper": {
+            "rotation": 354.81,
+            "xscale": 1,
+            "yscale": 1
+          },
+          "legRightLower": {
+            "rotation": 329.04,
+            "xscale": 1,
+            "yscale": 1
+          }
+        },
+        "element": {
+          "0": {},
+          "length": 1
+        }
+      }
+    ],
+    "msBetweenFrames": 10,
+    "frameCurrent": 2860,
+    "framesRemaining": 1,
+    "currentAnimations": {
+      "belly": {
+        "rotation": {
+          "from": 8.520114496768235,
+          "to": 0,
+          "stepPerFrame": -0.07159760081317844,
+          "current": 8.520114496768235
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "torso": {
+        "rotation": {
+          "from": 19.96247460757157,
+          "to": 0,
+          "stepPerFrame": -0.1677518874585846,
+          "current": 19.96247460757157
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "neck": {
+        "rotation": {
+          "from": 0
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "head": {
+        "rotation": {
+          "from": 0
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "leftEye": {
+        "rotation": {
+          "from": 0
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "rightEye": {
+        "rotation": {
+          "from": 0
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "armLeftUpper": {
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "armLeftLower": {
+        "rotation": {
+          "from": 74.05,
+          "to": 0,
+          "stepPerFrame": -0.6222689075630252,
+          "current": 74.05
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "handLeft": {
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "armRightUpper": {
+        "rotation": {
+          "from": -66.04000000000016,
+          "to": 348.69,
+          "stepPerFrame": -0.45991596638655596,
+          "current": -66.04000000000016
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "armRightLower": {
+        "rotation": {
+          "from": -32.51246537396122,
+          "to": 0,
+          "stepPerFrame": 0.2732139947391699,
+          "current": -32.51246537396122
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "handRight": {
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "legLeftUpper": {
+        "rotation": {
+          "from": -48.80999999999999,
+          "to": 354.81,
+          "stepPerFrame": -0.36655462184873944,
+          "current": -48.80999999999999
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "legLeftLower": {
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "legRightUpper": {
+        "rotation": {
+          "from": -72.13000000000008,
+          "to": 354.81,
+          "stepPerFrame": -0.562521008403362,
+          "current": -72.13000000000008
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      },
+      "legRightLower": {
+        "rotation": {
+          "from": 81.25,
+          "to": 329.04,
+          "stepPerFrame": -0.9429411764705881,
+          "current": 81.25
+        },
+        "xscale": {
+          "from": 1
+        },
+        "yscale": {
+          "from": 1
+        }
+      }
+    },
+    "loop": false
+  },
+  rock: {
+    by: 'jonathan',
+    cameraSetting: 'body',
+    keyframes: [{"time":0,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":1,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":520,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":344.05,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":1340,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":28.61,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":1990,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":339.44,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}}]
+  },
+  meow: {
+    by: 'jonathan',
+    cameraSetting: 'face',
+    keyframes: [{"time":0,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":1,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":490,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":26.57,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":149.42,"xscale":1,"yscale":1},"armLeftLower":{"rotation":130.6,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":343.3,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":910,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":26.57,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":186.58,"xscale":1,"yscale":1},"armLeftLower":{"rotation":174.29,"xscale":1,"yscale":1},"handLeft":{"rotation":52.59,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":311.1,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":2060,"groups":{"belly":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":312.65,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":149.42,"xscale":1,"yscale":1},"armLeftLower":{"rotation":130.6,"xscale":1,"yscale":1},"handLeft":{"rotation":100.3,"xscale":1,"yscale":1},"armRightUpper":{"rotation":242.1,"xscale":1,"yscale":1},"armRightLower":{"rotation":145.01,"xscale":1,"yscale":1},"handRight":{"rotation":151.19,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":311.99,"xscale":1,"yscale":1},"legRightLower":{"rotation":230.71,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}}]
   }
 }

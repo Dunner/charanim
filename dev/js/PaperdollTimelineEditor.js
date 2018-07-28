@@ -4,12 +4,27 @@ class PaperdollTimelineEditor {
     this.keyframedragging;
     this.basisPoint = $('#timeline')[0].offsetWidth/10000;
     this.timeline = {}
-    this.ui();
     this.paperdollDisplayer = paperdollDisplayer;
     setTimeout(function(){
       this.updateTimeline(this.paperdollDisplayer.animation.keyframes)
+      this.paperdollDisplayer.toggleVisibleConnectionPoints(true);
+      this.paperdollDisplayer.toggleVisibleAxlePoints(true);
+      this.ui();
 
     }.bind(this),300)
+    this.createSelectListOfAnimations();
+  }
+
+  createSelectListOfAnimations() {
+    this.animationSelectorInput = $("<select></select>").attr("id", "animations").attr("name", "animations");
+    
+    Object.keys(presetAnimations).forEach(function(animationName){
+      this.animationSelectorInput
+        .append($("<option></option>")
+        .attr("value", animationName)
+        .text(animationName));
+    }.bind(this))
+    $("#options").append(this.animationSelectorInput);
   }
 
 
@@ -171,8 +186,13 @@ class PaperdollTimelineEditor {
       this.paperdollDisplayer.playAnimation({keyframes: this.timeline.keyframes},false,false,this);
     }.bind(this))
 
-    $('#options__play-salute').on('click', function(e){
-      //this.paperdollDisplayer.playAnimation(presetAnimations.wavesalute.keyframes);
+    $('#options__save-copy').on('click', function(e){
+      var dummy = document.createElement("input");
+      document.body.appendChild(dummy);
+      dummy.setAttribute('value', JSON.stringify(this.timeline.keyframes));
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
     }.bind(this))
 
     $('#timeline__keyframes').on('mousedown',function (event) {
@@ -227,13 +247,11 @@ class PaperdollTimelineEditor {
         x:event.clientX,
         y:event.clientY
       }
-      return false;
     });
 
     $(document).on('mouseup',function (event) {
       clearInterval(this.keyframedragging)
       clearInterval(this.rotatedragging);
-      return false;
     }.bind(this));
 
     $(document).on('mousemove',function (event) {
@@ -253,6 +271,15 @@ class PaperdollTimelineEditor {
           top: -999
         })
       }
+    }.bind(this));
+
+    $( ".target" ).change(function() {
+      alert( "Handler for .change() called." );
+    });
+
+    $( this.animationSelectorInput ).change(function(event) {
+      var animationName = event.target.value;
+      this.paperdollDisplayer.playAnimation(presetAnimations[animationName],false,false,this);
     }.bind(this));
 
   }

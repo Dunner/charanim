@@ -7,6 +7,8 @@ class PaperdollDisplayer {
     this.doll = {};
     this.animationInterval;
     this.animation = {};
+    this.connectionPoints = [];
+    this.axlePoints = [];
 
     this.canvasSize = {
       width: this.DOMElement.width(),
@@ -23,7 +25,7 @@ class PaperdollDisplayer {
       groups: this.createKeyframeObject(this.doll)
     };
 
-    this.playAnimation({keyframes:[]})
+    this.playAnimation({keyframes:[], cameraSetting: 'body'})
   }
 
   /*
@@ -74,20 +76,34 @@ class PaperdollDisplayer {
   }
 
 
-  drawAxlePoint(limbName) {
-    this.doll[limbName].axle = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: 0.2 });
+  drawAxlePoint(limbName, visible) {
+    this.doll[limbName].axle = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#0f0', opacity: visible ? 0.2 : 0 });
+    this.axlePoints.push(this.doll[limbName].axle);
   }
-  drawConnectionPoints(limbName) {
+  drawConnectionPoints(limbName, visible) {
     //connectionpoints
     for (var connectionFor in this.dollConfig[limbName].connectionsFor) {
       var connection = this.dollConfig[limbName].connectionsFor[connectionFor];
-      connection.point = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: 0.2 });
+      connection.point = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: visible ? 0.2 : 0 });
       connection.point.center(
         this.doll[limbName].wrapper.width()/2,
         this.doll[limbName].wrapper.height()/2
       );
+      this.connectionPoints.push(connection.point);
       //doll[limbName].group.add(connection.point);
     }
+  }
+
+  toggleVisibleConnectionPoints(visible) {
+    this.connectionPoints.forEach(function(connectionPoint) {
+      connectionPoint.attr({ fill: '#f00', opacity: visible ? 0.2 : 0 });
+    });
+  }
+
+  toggleVisibleAxlePoints(visible) {
+    this.axlePoints.forEach(function(axlePoint) {
+      axlePoint.attr({ fill: '#0f0', opacity: visible ? 0.2 : 0 });
+    });
   }
 
   /*
@@ -114,6 +130,9 @@ class PaperdollDisplayer {
     if(config.cameraSetting) {
       if (config.cameraSetting === 'face') {
         this.cameraZoomToLimb('head', 2, 750)
+      }
+      if (config.cameraSetting === 'body') {
+        this.cameraZoomToLimb('torso', 1.5, 750)
       }
     }
     this.animation = {
