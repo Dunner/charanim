@@ -75,6 +75,7 @@
   //## 
   gulp.task('watch', function () { 
     gulp.watch(paths.js, ['lint', 'js']); 
+    gulp.watch(paths.data, ['lint', 'js']); 
     gulp.watch(paths.styles + '/**/*.styl', ['styles']); 
     gulp.watch('dev/**/*.html').on('change', reload); 
     gulp.watch('dev/bundle.js').on('change', reload); 

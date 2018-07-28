@@ -1,6 +1,7 @@
 window.presetAnimations = {
   wavesalute: {
     by: 'jonathan',
+    cameraSetting: 'face',
     keyframes: [
       {
         "time": 0,

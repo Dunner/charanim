@@ -13,18 +13,27 @@ body {
 }
 #drawing {
   width: 100%;
-  height: 100%;
+  height: -webkit-calc( 100% - 360px );
+  height: calc( 100% - 360px );
+  overflow: hidden;
+}
+#uibox {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: 360px;
+  background: #222;
+  color: #fff;
   overflow: hidden;
 }
 #timeline {
-  position: absolute;
-  bottom: 300px;
-  left: 0px;
-  right: 0px;
+  width: 100%;
   height: 80px;
   background: #222;
   color: #fff;
   overflow: hidden;
+  position:relative;
 }
 #timeline #timeline__indicator {
   position: absolute;
@@ -61,11 +70,7 @@ body {
   background: #0f0;
 }
 #options {
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  height: 300px;
+  height: 280px;
   background: #333;
   color: #fff;
 }

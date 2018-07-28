@@ -88,7 +88,49 @@ window.paperdoll = {
       radius: 20,
       fill: '#f7cbc4'
     }],
-    connectsTo: 'neck'
+    connectsTo: 'neck',
+    connectionsFor: {
+      'leftEye': {
+        'left': 'center',
+        'top': 'center'
+      },
+      'rightEye': {
+        'left': 'center',
+        'top': 'center'
+      }
+    }
+  },
+  leftEye: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 12,
+      height: 10,
+      left: -4,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
+  },
+  rightEye: {
+    xscale: 1,
+    yscale: 1,
+    rotation: 0,
+    inheritsRotation: true,
+    parts: [{
+      width: 12,
+      height: 10,
+      right: -4,
+      bottom: 'center',
+      rotation: 0,
+      radius: 10,
+      fill: '#000000'
+    }],
+    connectsTo: 'head'
   },
   armLeftUpper: {
     xscale: 1,
