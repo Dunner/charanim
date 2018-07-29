@@ -226,7 +226,7 @@ class PaperdollTimelineEditor {
     $('#options__save-copy').on('click', function(e){
       var dummy = document.createElement("input");
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', JSON.stringify(this.timeline));
+      dummy.setAttribute('value', JSON.stringify(this.timeline.keyframes));
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
@@ -299,7 +299,8 @@ class PaperdollTimelineEditor {
     });
 
     $('#drawing').on('mousedown',function(event) {
-      if (event.target.nodeName == 'rect' && event.which == 1) {
+      var nodeNames = ['rect', 'polygon', 'path']
+      if (nodeNames.indexOf(event.target.nodeName) !== -1 && event.which == 1) {
         var node = event.target;
         this.selectTarget(node);
       } else {

@@ -29,23 +29,34 @@
           window.paperdollDisplayer = new PaperdollDisplayer(
             window.paperdoll, 
             'drawing');
-          
-          $('<div/>', {
-            id: 'timeline-editor',
-          }).appendTo('#paperdoll-ui');
 
-          window.paperdollTimelineEditor = new PaperdollTimelineEditor(paperdollDisplayer,
-            'timeline-editor');
 
-          /*
-          paperdollDisplayer.playAnimation(
-            presetAnimations.wavesalute, 
-            true, function() {
-              console.log('Finished Animation')
-            },
-            paperdollTimelineEditor
-          )
-          */
+          //initTimelineEditor()
+          runIntroAnimations()
+
+          function initTimelineEditor() {
+            $('<div/>', {
+              id: 'timeline-editor',
+            }).appendTo('#paperdoll-ui');
+            window.paperdollTimelineEditor = new PaperdollTimelineEditor(paperdollDisplayer,
+              'timeline-editor');
+          }
+
+          function runIntroAnimations() {
+            paperdollDisplayer.playAnimation(
+              presetAnimations['rise&shine2'], 
+              false, 
+              function() {
+                /*
+                paperdollDisplayer.playAnimation(
+                  presetAnimations['empty'],
+                  false
+                );
+                */
+              }.bind(this)
+            )
+          }
+
         });
       </script>
   </body> 

@@ -19,13 +19,13 @@ class PaperdollDisplayer {
       this.drawLimb(part);
     }
 
-    this.updateInterval = setInterval(this.update.bind(this), 10);
+    this.updateInterval = setInterval(this.update.bind(this), 30);
     this.freshState = {
       time:0,
       groups: this.createKeyframeObject(this.doll)
     };
 
-    this.playAnimation({keyframes:[], cameraSetting: 'body'})
+    this.playAnimation({keyframes:[], cameraSetting: 'face'})
   }
 
   /*
@@ -42,7 +42,10 @@ class PaperdollDisplayer {
     this.doll[limbName].wrapper = wrapper;
     this.doll[limbName].group = wrapper.group();
     this.doll[limbName].parts = [];
-
+    var gradient = this.draw.gradient('radial', function(stop) {
+      stop.at(0, '#D2996C', 1)
+      stop.at(1, '#B6855E',1)
+    })
 
     this.doll[limbName].wrapper.center(
       this.doll[limbName].wrapper.parent().node.clientWidth/2,
@@ -51,22 +54,29 @@ class PaperdollDisplayer {
 
     for (var partIndex in this.dollConfig[limbName].parts) {
       var part = this.dollConfig[limbName].parts[partIndex];
-      var drawnPart = 
-      wrapper.rect(
-        part.width, 
-        part.height
-      ).attr({ 
-        fill: part.fill, 
-        opacity: 1, 
+      var drawnPart = {}
+
+      if(part.shape === 'path') {
+        drawnPart = wrapper.path(part.points);
+      }
+      if(part.shape === 'polygon') {
+        drawnPart = wrapper.polygon(part.points);
+      }
+      if(part.shape === 'rect') {
+        drawnPart = wrapper.rect(part.width, part.height);
+      }
+      var fill = part.fill ? part.fill : gradient;
+      var texture = part.texture ? wrapper.image(part.texture.uri, part.texture.width, part.texture.height) : null;
+
+      drawnPart.attr({ 
+        fill: texture ? texture : fill,
+        opacity: part.opacity ? part.opacity : 1, 
         id: limbName,
         rx: part.radius,
-        ry: part.radius
+        ry: part.radius,
       });
-      drawnPart.center(
-        this.doll[limbName].wrapper.width()/2+part.offsetX,
-        this.doll[limbName].wrapper.height()/2+part.offsetY
-      );
-      var dollPart = {element: drawnPart, data: part};
+
+      var dollPart = {element: drawnPart, data: part, texture: texture ? texture : null};
       this.doll[limbName].parts.push(dollPart);
       this.doll[limbName].group.add(drawnPart);
     }
@@ -129,10 +139,10 @@ class PaperdollDisplayer {
   playAnimation(config, loop, cbFinished, timelineEditor) {
     if(config.cameraSetting) {
       if (config.cameraSetting === 'face') {
-        this.cameraZoomToLimb('head', 2, 750)
+        this.cameraZoomToLimb('head', 1.8, 750)
       }
       if (config.cameraSetting === 'body') {
-        this.cameraZoomToLimb('torso', 1.5, 750)
+        this.cameraZoomToLimb('belly', 1.2, 750)
       }
     }
     this.animation = {
@@ -149,7 +159,6 @@ class PaperdollDisplayer {
       this.animation.keyframes.unshift(this.freshState)
     }
     this.poseCharacter(this.animation.keyframes[0]);
-    console.log(this.animation.keyframes)
     
     clearInterval(this.animationInterval);
     this.animationInterval = setInterval(function(){
@@ -159,9 +168,9 @@ class PaperdollDisplayer {
         clearInterval(this.animationInterval);
         if (this.animation.loop) {
           this.playAnimation(config, true)
-          if(cbFinished) {
-            cbFinished();
-          }
+        }
+        if(cbFinished) {
+          cbFinished();
         }
         return;
       } else {
@@ -178,18 +187,18 @@ class PaperdollDisplayer {
           }
         }
 
-        for (var g in this.animation.currentAnimations) {
-          for (var limbName in this.animation.currentAnimations[g]) {
-            if(!this.animation.currentAnimations[g][limbName].to) {
+        for (var limbName in this.animation.currentAnimations) {
+          for (var animationAttribute in this.animation.currentAnimations[limbName]) {
+            if(this.animation.currentAnimations[limbName][animationAttribute].to === undefined) {
               continue;
             }
-            var values = this.animation.currentAnimations[g][limbName];
-            if (this.doll[g][limbName] !== this.animation.currentAnimations[g][limbName].to) {
-              this.doll[g][limbName] = this.doll[g][limbName] + values.stepPerFrame;
-
+              
+            var values = this.animation.currentAnimations[limbName][animationAttribute];
+            if (this.doll[limbName][animationAttribute] !== this.animation.currentAnimations[limbName][animationAttribute].to) {
+              this.doll[limbName][animationAttribute] = this.doll[limbName][animationAttribute] + values.stepPerFrame;
             }
-            if (Math.round(this.doll[g][limbName]) == Math.round(values.to)) {
-              delete this.animation.currentAnimations[g][limbName];
+            if (Math.round(this.doll[limbName][animationAttribute]) == Math.round(values.to)) {
+              delete this.animation.currentAnimations[limbName][animationAttribute];
             }
           }
         }
@@ -208,34 +217,33 @@ class PaperdollDisplayer {
   processKeyframe(keyframe, frameCurrent) {
 
     //Info from this keyframe
-    for (var g in keyframe.groups) {
-      var group = keyframe.groups[g];
-      this.animation.currentAnimations[g] = {};
-      for (var limbName in group) {
-        var value = group[limbName];
-        this.animation.currentAnimations[g][limbName] = {
-          from: this.doll[g][limbName]
+    for (var limbName in keyframe.groups) {
+      var group = keyframe.groups[limbName];
+      this.animation.currentAnimations[limbName] = {};
+      for (var animationAttribute in group) {
+        var value = group[animationAttribute];
+        this.animation.currentAnimations[limbName][animationAttribute] = {
+          from: this.doll[limbName][animationAttribute]
         }
       }
     }
 
-    for (var g in this.animation.currentAnimations) {
-      var currentGroupAnim = this.animation.currentAnimations[g];
+    for (var limbName in this.animation.currentAnimations) {
+      var currentGroupAnim = this.animation.currentAnimations[limbName];
       var nextKeyFrame = this.animation.keyframes[this.animation.keyframes.indexOf(keyframe)+1];
-      var nextGroupAnimInfo = nextKeyFrame.groups[g];
-      for (var limbName in nextGroupAnimInfo) {
-        if (currentGroupAnim[limbName] == undefined) {continue;}
-        if (!currentGroupAnim[limbName].to) {
-          if (currentGroupAnim[limbName].from === nextGroupAnimInfo[limbName]) {
+      var nextGroupAnimInfo = nextKeyFrame.groups[limbName];
+      for (var animationAttribute in nextGroupAnimInfo) {
+        if (currentGroupAnim[animationAttribute] == undefined) {continue;}
+        if (!currentGroupAnim[animationAttribute].to) {
+          if (currentGroupAnim[animationAttribute].from === nextGroupAnimInfo[animationAttribute]) {
             continue;
           }
-          console.log('keyframe: ', this.animation.keyframes.indexOf(keyframe), '- animate', g, limbName)
-          currentGroupAnim[limbName].to = nextGroupAnimInfo[limbName];
-
-          var aDiff = this.angleDiff(currentGroupAnim[limbName].from, currentGroupAnim[limbName].to)
+          //console.log('keyframe: ', this.animation.keyframes.indexOf(keyframe), '- animate', limbName, animationAttribute)
+          currentGroupAnim[animationAttribute].to = nextGroupAnimInfo[animationAttribute];
+          var aDiff = this.angleDiff(currentGroupAnim[animationAttribute].from, currentGroupAnim[animationAttribute].to)
           var framesToPlayWith = (nextKeyFrame.time - frameCurrent) / this.animation.msBetweenFrames;
-          currentGroupAnim[limbName].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
-          currentGroupAnim[limbName].current = currentGroupAnim[limbName].from;
+          currentGroupAnim[animationAttribute].stepPerFrame = aDiff.direction * (aDiff.distance / framesToPlayWith);
+          currentGroupAnim[animationAttribute].current = currentGroupAnim[animationAttribute].from;
         }
       }
       
@@ -280,7 +288,6 @@ class PaperdollDisplayer {
 
     for (var limbName in this.doll) {
 
-
       for (var i = 0; i < this.doll[limbName].parts.length; i++) {
         var part = this.doll[limbName].parts[i];
 
@@ -292,6 +299,12 @@ class PaperdollDisplayer {
           posFromEdge.x,
           posFromEdge.y
         );
+        if (part.texture) {
+          part.texture.parent().center(
+            part.element.cx(),
+            part.element.cy()
+          );
+        }
       }
 
       this.updateAxlePoint(limbName);

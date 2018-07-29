@@ -13,8 +13,8 @@ body {
 }
 #drawing {
   width: 100%;
-  height: -webkit-calc( 100% - 360px );
-  height: calc( 100% - 360px );
+  height: 100%;
+  height: 100%;
   overflow: hidden;
 }
 #uibox {
