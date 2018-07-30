@@ -313,8 +313,6 @@ class PaperdollDisplayer {
     var groups = {};
     var props = [
       'rotation',
-      'xscale',
-      'yscale',
     ];
     
     for (var group in char) {
@@ -354,10 +352,12 @@ class PaperdollDisplayer {
             //Flip pattern>image horizontally
             part.element.flip('x');
           }
-          //Center Textures
+          //Center & Scale Textures
           if (part.data.type === 'texture') {
-            var tetureRef = part.element.reference('fill');
-            tetureRef.center(
+            var textureRef = part.element.reference('fill');
+            //textureRef.scale(this.doll[limbName].xscale, this.doll[limbName].yscale);
+            
+            textureRef.center(
               part.element.cx(),
               part.element.cy()
             );
@@ -951,7 +951,7 @@ $( document ).ready(function() {
       ],
       connectionsFor: {
         'neck': {
-          'left': 67,
+          'left': 'center',
           'top': 22
         },
         'armLeftUpper': {
@@ -963,7 +963,7 @@ $( document ).ready(function() {
           'top': 45
         },
         'hip': {
-          'left': 73,
+          'left': 'center',
           'bottom': 0
         }
       }
@@ -2084,6 +2084,14 @@ window.presetAnimations = {
     by: 'jonathan',
     cameraSetting: 'body',
     "keyframes":[{"time":0,"groups":{"hip":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":0,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"nose":{"rotation":0,"xscale":1,"yscale":1},"mouth":{"rotation":0,"xscale":1,"yscale":1},"leftEar":{"rotation":0,"xscale":1,"yscale":1},"rightEar":{"rotation":0,"xscale":1,"yscale":1},"hair":{"rotation":0,"xscale":1,"yscale":1},"hat":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":200,"groups":{"hip":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":14.04,"xscale":1,"yscale":1},"legLeftLower":{"rotation":356.19,"xscale":1,"yscale":1},"legRightUpper":{"rotation":341.57,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":0,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"nose":{"rotation":0,"xscale":1,"yscale":1},"mouth":{"rotation":0,"xscale":1,"yscale":1},"leftEar":{"rotation":0,"xscale":1,"yscale":1},"rightEar":{"rotation":0,"xscale":1,"yscale":1},"hair":{"rotation":0,"xscale":1,"yscale":1},"hat":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":86.73,"xscale":1,"yscale":1},"armLeftLower":{"rotation":67.07,"xscale":1,"yscale":1},"handLeft":{"rotation":54.46,"xscale":1,"yscale":1},"armRightUpper":{"rotation":276.84,"xscale":1,"yscale":1},"armRightLower":{"rotation":283.69,"xscale":1,"yscale":1},"handRight":{"rotation":288.01,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}}],"keyframeSelected":{"time":200,"groups":{"hip":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":14.04,"xscale":1,"yscale":1},"legLeftLower":{"rotation":356.19,"xscale":1,"yscale":1},"legRightUpper":{"rotation":341.57,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":0,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"nose":{"rotation":0,"xscale":1,"yscale":1},"mouth":{"rotation":0,"xscale":1,"yscale":1},"leftEar":{"rotation":0,"xscale":1,"yscale":1},"rightEar":{"rotation":0,"xscale":1,"yscale":1},"hair":{"rotation":0,"xscale":1,"yscale":1},"hat":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":86.73,"xscale":1,"yscale":1},"armLeftLower":{"rotation":67.07,"xscale":1,"yscale":1},"handLeft":{"rotation":54.46,"xscale":1,"yscale":1},"armRightUpper":{"rotation":276.84,"xscale":1,"yscale":1},"armRightLower":{"rotation":283.69,"xscale":1,"yscale":1},"handRight":{"rotation":288.01,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}}
+  },
+  'meh': {
+    cameraSetting: 'body',
+    keyframes: [{"time":0,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":0},"legLeftLower":{"rotation":0},"legRightUpper":{"rotation":0},"legRightLower":{"rotation":0},"torso":{"rotation":1},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":135},"armLeftLower":{"rotation":180.95},"handLeft":{"rotation":0},"armRightUpper":{"rotation":0},"armRightLower":{"rotation":0},"handRight":{"rotation":0}},"element":{"0":{},"length":1}},{"time":250,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":0},"legLeftLower":{"rotation":0},"legRightUpper":{"rotation":0},"legRightLower":{"rotation":0},"torso":{"rotation":1},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":3.48},"armLeftLower":{"rotation":180.95},"handLeft":{"rotation":273.01},"armRightUpper":{"rotation":0},"armRightLower":{"rotation":0},"handRight":{"rotation":0}},"element":{"0":{},"length":1}},{"time":560,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":0},"legLeftLower":{"rotation":0},"legRightUpper":{"rotation":0},"legRightLower":{"rotation":0},"torso":{"rotation":1},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":262.59},"armLeftLower":{"rotation":180.95},"handLeft":{"rotation":273.01},"armRightUpper":{"rotation":0},"armRightLower":{"rotation":0},"handRight":{"rotation":0}},"element":{"0":{},"length":1}}]
+  },
+  'kick': {
+    cameraSetting: 'body',
+    keyframes: [{"time":0,"groups":{"hip":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"legLeftLower":{"rotation":0,"xscale":1,"yscale":1},"legRightUpper":{"rotation":0,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":0,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"nose":{"rotation":0,"xscale":1,"yscale":1},"mouth":{"rotation":0,"xscale":1,"yscale":1},"leftEar":{"rotation":0,"xscale":1,"yscale":1},"rightEar":{"rotation":0,"xscale":1,"yscale":1},"hair":{"rotation":0,"xscale":1,"yscale":1},"hat":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":0,"xscale":1,"yscale":1},"armLeftLower":{"rotation":0,"xscale":1,"yscale":1},"handLeft":{"rotation":0,"xscale":1,"yscale":1},"armRightUpper":{"rotation":0,"xscale":1,"yscale":1},"armRightLower":{"rotation":0,"xscale":1,"yscale":1},"handRight":{"rotation":0,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":200,"groups":{"hip":{"rotation":0,"xscale":1,"yscale":1},"legLeftUpper":{"rotation":14.04,"xscale":1,"yscale":1},"legLeftLower":{"rotation":356.19,"xscale":1,"yscale":1},"legRightUpper":{"rotation":341.57,"xscale":1,"yscale":1},"legRightLower":{"rotation":0,"xscale":1,"yscale":1},"torso":{"rotation":0,"xscale":1,"yscale":1},"neck":{"rotation":0,"xscale":1,"yscale":1},"head":{"rotation":0,"xscale":1,"yscale":1},"leftEye":{"rotation":0,"xscale":1,"yscale":1},"rightEye":{"rotation":0,"xscale":1,"yscale":1},"nose":{"rotation":0,"xscale":1,"yscale":1},"mouth":{"rotation":0,"xscale":1,"yscale":1},"leftEar":{"rotation":0,"xscale":1,"yscale":1},"rightEar":{"rotation":0,"xscale":1,"yscale":1},"hair":{"rotation":0,"xscale":1,"yscale":1},"hat":{"rotation":0,"xscale":1,"yscale":1},"armLeftUpper":{"rotation":86.73,"xscale":1,"yscale":1},"armLeftLower":{"rotation":67.07,"xscale":1,"yscale":1},"handLeft":{"rotation":54.46,"xscale":1,"yscale":1},"armRightUpper":{"rotation":276.84,"xscale":1,"yscale":1},"armRightLower":{"rotation":283.69,"xscale":1,"yscale":1},"handRight":{"rotation":288.01,"xscale":1,"yscale":1}},"element":{"0":{},"length":1}},{"time":360,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":115.02},"legLeftLower":{"rotation":-4.000500000000002},"legRightUpper":{"rotation":-19.35150000000001},"legRightLower":{"rotation":0},"torso":{"rotation":21.8},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":86.73},"armLeftLower":{"rotation":67.06999999999996},"handLeft":{"rotation":54.45999999999999},"armRightUpper":{"rotation":-87.31800000000003},"armRightLower":{"rotation":319.14},"handRight":{"rotation":-75.58950000000002}},"element":{"0":{},"length":1}},{"time":440,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":115.01999999999992},"legLeftLower":{"rotation":117.41},"legRightUpper":{"rotation":-18.50088461538462},"legRightLower":{"rotation":0},"torso":{"rotation":40.6},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":86.73},"armLeftLower":{"rotation":209.05},"handLeft":{"rotation":54.45999999999999},"armRightUpper":{"rotation":-86.57169230769222},"armRightLower":{"rotation":-112.66897435897448},"handRight":{"rotation":-75.58950000000021}},"element":{"0":{},"length":1}},{"time":520,"groups":{"hip":{"rotation":0},"legLeftUpper":{"rotation":77.91},"legLeftLower":{"rotation":14.38},"legRightUpper":{"rotation":-18.50088461538462},"legRightLower":{"rotation":0},"torso":{"rotation":356.36},"neck":{"rotation":0},"head":{"rotation":0},"eyeLeft":{"rotation":0},"eyeRight":{"rotation":0},"nose":{"rotation":0},"mouth":{"rotation":0},"earLeft":{"rotation":0},"earRight":{"rotation":0},"hat":{"rotation":0},"beard":{"rotation":0},"armLeftUpper":{"rotation":86.73},"armLeftLower":{"rotation":167.91},"handLeft":{"rotation":167.91},"armRightUpper":{"rotation":-86.57169230769222},"armRightLower":{"rotation":296.57},"handRight":{"rotation":-75.58950000000021}},"element":{"0":{},"length":1}}]
   }
 }
 window.sets = {}
@@ -2447,15 +2455,15 @@ sets.beard = [
     id: 'beard1',
     parts: [    {
       type: 'texture',
-      width: 105,
-      height: 107,
+      width: 125,
+      height: 125,
       opacity: 1,
-      top: 45,
-      right: 'center',
+      top: 52,
+      right: 57,
       texture: {
         uri: 'images/texture-mancover.png',
-        width: 105,
-        height: 107
+        width: 125,
+        height: 125
       }
     }]
   }

@@ -359,15 +359,15 @@ sets.beard = [
     id: 'beard1',
     parts: [    {
       type: 'texture',
-      width: 105,
-      height: 107,
+      width: 125,
+      height: 125,
       opacity: 1,
-      top: 45,
-      right: 'center',
+      top: 52,
+      right: 57,
       texture: {
         uri: 'images/texture-mancover.png',
-        width: 105,
-        height: 107
+        width: 125,
+        height: 125
       }
     }]
   }

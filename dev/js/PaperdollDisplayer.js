@@ -305,8 +305,6 @@ class PaperdollDisplayer {
     var groups = {};
     var props = [
       'rotation',
-      'xscale',
-      'yscale',
     ];
     
     for (var group in char) {
@@ -346,10 +344,12 @@ class PaperdollDisplayer {
             //Flip pattern>image horizontally
             part.element.flip('x');
           }
-          //Center Textures
+          //Center & Scale Textures
           if (part.data.type === 'texture') {
-            var tetureRef = part.element.reference('fill');
-            tetureRef.center(
+            var textureRef = part.element.reference('fill');
+            //textureRef.scale(this.doll[limbName].xscale, this.doll[limbName].yscale);
+            
+            textureRef.center(
               part.element.cx(),
               part.element.cy()
             );

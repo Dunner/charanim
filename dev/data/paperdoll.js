@@ -76,7 +76,7 @@ $( document ).ready(function() {
       ],
       connectionsFor: {
         'neck': {
-          'left': 67,
+          'left': 'center',
           'top': 22
         },
         'armLeftUpper': {
@@ -88,7 +88,7 @@ $( document ).ready(function() {
           'top': 45
         },
         'hip': {
-          'left': 73,
+          'left': 'center',
           'bottom': 0
         }
       }
