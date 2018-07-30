@@ -175,6 +175,7 @@ sets.hand = [
         width: 30,
         height: 55,
         opacity: 1,
+        radius: 5,
         top: 1,
         left: 'center',
       }
@@ -241,6 +242,136 @@ sets.armLower = [
   }
 ];
 
+sets.eye = [
+  {
+    id: 'eye1',
+    parts: [
+      {
+        type: 'path',
+        points: 'M0.9,2.6l1.6-1.1c0.6-0.4,1.3-0.6,2-0.7c2.1-0.2,6.6-0.6,8.9,0.1c3,1,3,3,3,3s1,3-8,2c-5-0.6-6.9-1.4-7.6-2.1 C0.4,3.5,0.4,2.9,0.9,2.6z',
+        width: 17,
+        height: 7,
+        opacity: 0.1,
+        left: -4,
+        bottom: 'center',
+        fill: '#000'
+      }
+    ]
+  }
+]
+
+sets.nose = [
+  {
+    id: 'nose1',
+    parts: [{
+      type: 'path',
+      points: 'M0.5,2.2l8.5,18c0.3,0.6,0,1.2-0.6,1.5l-4.7,2c-0.6,0.3-1.3-0.1-1.4-0.8L0.5,5.2V2.2z',
+      width: 10,
+      height: 24,
+      opacity: 0.1,
+      right: -1,
+      top: 1,
+      fill: '#000'
+    }]
+  }
+];
+
+
+sets.mouth = [
+  {
+    id: 'mouth1',
+    parts: [{
+      type: 'rect',
+      width: 10,
+      height: 3,
+      opacity: 0.1,
+      right: 'center',
+      top: -30,
+      radius: 10,
+      fill: '#000'
+    },
+    {
+      type: 'rect',
+      width: 18,
+      height: 2,
+      opacity: 0.1,
+      right: 'center',
+      top: -26,
+      radius: 10,
+      fill: '#000'
+    }]
+  }
+];
+
+sets.ear = [
+  {
+    id: 'ear1',
+    parts: [{
+      type: 'rect',
+      width: 10,
+      height: 12,
+      opacity: 1,
+      left: 5,
+      bottom: 'center',
+      radius: 10
+    }]
+  }
+]
+
+sets.hair = [
+  {
+    id: 'hair1',
+    parts: [{
+      type: 'texture',
+      points: 'M9.1,6.9c0,0,0,9,1,5s4-7,4-7s18-6,13-4s-7,4-7,4s3-3,21-4s29,15,29,15s2.4,16.5,2,23c-0.1,1-1,4-1,4l-2,12 l-1-13l-3-6l-19-4c0,0,14,8,11,8s-19-9-19-9s15,11,11,10s-12-7-12-7s4,12,1,10s-10-15-10-15l-10-4c0,0-4-3-6-1s0,14,0,14s-2,2-4,6 s-2,11-2,11s1-3-4-18s3-24,3-24L9.1,6.9z',
+      width: 72,
+      height: 59,
+      opacity: 0.7,
+      right: 39,
+      bottom: 38,
+      texture: {
+        uri: 'images/texture-fur.jpg',
+        width: 350,
+        height: 235
+      }
+    }]
+  }
+]
+
+sets.hat = [
+  {
+    id: 'hat1',
+    parts: [{
+      type: 'polygon',
+      points: '50,0 60,40 100,50 60,60 50,100 40,60 0,50 40,40',
+      width: 5,
+      height: 5,
+      opacity: 1,
+      right: 'center',
+      bottom: 'center',
+      fill: '#c8a7a5'
+    }]
+  }
+]
+
+sets.beard = [
+  {
+    id: 'beard1',
+    parts: [    {
+      type: 'texture',
+      width: 105,
+      height: 107,
+      opacity: 1,
+      top: 45,
+      right: 'center',
+      texture: {
+        uri: 'images/texture-mancover.png',
+        width: 105,
+        height: 107
+      }
+    }]
+  }
+]
 
 window.getSet = function(slotType, setID) {
   for(var key in window.sets) {

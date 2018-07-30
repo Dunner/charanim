@@ -41,11 +41,17 @@ class PaperdollDisplayer {
   populateSets(config) {
 
     for(var key in config) {
-      for(var set of config[key].sets) {
+      for(var setIndex in config[key].sets) {
+        var set = config[key].sets[setIndex]
         var slotString = key.replace('Left', '').replace('Right', '');
         var newSet = getSet(slotString,set.id);
+        if (!newSet || newSet.parts.length < 1) {
+          set.parts = [];
+          return;
+        }
         set.parts = JSON.parse(JSON.stringify(newSet.parts));
       }
+
     }
     return config;
   }
@@ -57,6 +63,7 @@ class PaperdollDisplayer {
   */
 
   drawLimb(limbName) {
+    if(this.dollConfig[limbName].sets.length < 1) {console.log(limbName);return;}
     var wrapper = this.draw.nested();
     wrapper.viewbox(0,0,this.canvasSize.width,this.canvasSize.height);
     wrapper.width(this.canvasSize.width);
@@ -372,7 +379,9 @@ class PaperdollDisplayer {
       }
 
       this.updateAxlePoint(limbName);
-      this.updateConnectionPoints(limbName, this.doll[limbName].sets[0].parts[0].element);
+      if(this.doll[limbName].sets.length > 0) {
+        this.updateConnectionPoints(limbName, this.doll[limbName].sets[0].parts[0].element);
+      }
 
       //limbName has connection
       if (this.doll[limbName].connectsTo) {
@@ -983,11 +992,11 @@ $( document ).ready(function() {
       ],
       connectsTo: 'neck',
       connectionsFor: {
-        'leftEye': {
+        'eyeLeft': {
           'left': 'center',
           'top': 'center'
         },
-        'rightEye': {
+        'eyeRight': {
           'left': 'center',
           'top': 'center'
         },
@@ -999,11 +1008,11 @@ $( document ).ready(function() {
           'left': 'center',
           'top': 'center'
         },
-        'leftEar': {
+        'earLeft': {
           'left': 0,
           'top': 'center'
         },
-        'rightEar': {
+        'earRight': {
           'right': 0,
           'top': 'center'
         },
@@ -1014,65 +1023,31 @@ $( document ).ready(function() {
         'hat': {
           'left': 'center',
           'top': 5
+        },
+        'beard': {
+          'left': 'center',
+          'bottom': 5
         }
       }
     },
-    /*leftEye: {
+    eyeLeft: {
       xscale: 1,
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'path',
-        points: 'M0.9,2.6l1.6-1.1c0.6-0.4,1.3-0.6,2-0.7c2.1-0.2,6.6-0.6,8.9,0.1c3,1,3,3,3,3s1,3-8,2c-5-0.6-6.9-1.4-7.6-2.1 C0.4,3.5,0.4,2.9,0.9,2.6z',
-        width: 17,
-        height: 7,
-        opacity: 0.1,
-        left: -4,
-        bottom: 'center',
-        rotation: 0,
-        radius: 10,
-        fill: '#000'
-      },{
-        type: 'rect',
-        width: 9,
-        height: 9,
-        opacity: 1,
-        left: -4,
-        bottom: 4,
-        rotation: 0,
-        radius: 10,
-        fill: '#3E2116'
-      }],
+      sets: [
+        {id: 'eye1', flip: false}
+      ],
       connectsTo: 'head'
     },
-    rightEye: {
+    eyeRight: {
       xscale: 1,
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'path',
-        points: 'M16,2.6l-1.6-1.1c-0.6-0.4-1.3-0.6-2-0.7c-2.1-0.2-6.6-0.6-8.9,0.1c-3,1-3,3-3,3c0,0-1,3,8,2 c5-0.6,6.9-1.4,7.6-2.1C16.5,3.5,16.5,2.9,16,2.6z',
-        width: 17,
-        height: 7,
-        opacity: 0.1,
-        right: -4,
-        bottom: 'center',
-        rotation: 0,
-        radius: 10,
-        fill: '#000'
-      },{
-        type: 'rect',
-        width: 9,
-        height: 9,
-        opacity: 1,
-        right: -4,
-        bottom: 4,
-        rotation: 0,
-        radius: 10,
-        fill: '#3E2116'
-      }],
+      sets: [
+        {id: 'eye1', flip: true}
+      ],
       connectsTo: 'head'
     },
     nose: {
@@ -1080,18 +1055,9 @@ $( document ).ready(function() {
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'path',
-        points: 'M0.5,2.2l8.5,18c0.3,0.6,0,1.2-0.6,1.5l-4.7,2c-0.6,0.3-1.3-0.1-1.4-0.8L0.5,5.2V2.2z',
-        width: 10,
-        height: 24,
-        opacity: 0.1,
-        right: -1,
-        top: 1,
-        rotation: 0,
-        radius: 10,
-        fill: '#000'
-      }],
+      sets: [
+        {id: 'nose1', flip: false}
+      ],
       connectsTo: 'head'
     },
     mouth: {
@@ -1099,63 +1065,29 @@ $( document ).ready(function() {
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'rect',
-        width: 10,
-        height: 3,
-        opacity: 0.1,
-        right: 'center',
-        top: -30,
-        rotation: 0,
-        radius: 10,
-        fill: '#000'
-      },
-      {
-        type: 'rect',
-        width: 18,
-        height: 2,
-        opacity: 0.1,
-        right: 'center',
-        top: -26,
-        rotation: 0,
-        radius: 10,
-        fill: '#000'
-      }
+      sets: [
+        {id: 'mouth1', flip: false}
       ],
       connectsTo: 'head'
     },
-    leftEar: {
+    earLeft: {
       xscale: 1,
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'rect',
-        width: 10,
-        height: 12,
-        opacity: 1,
-        left: 5,
-        bottom: 'center',
-        rotation: 0,
-        radius: 10
-      }],
+      sets: [
+        {id: 'ear1', flip: false}
+      ],
       connectsTo: 'head'
     },
-    rightEar: {
+    earRight: {
       xscale: 1,
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'rect',
-        width: 10,
-        height: 12,
-        opacity: 1,
-        right: 5,
-        bottom: 'center',
-        rotation: 0,
-        radius: 10
-      }],
+      sets: [
+        {id: 'ear1', flip: true}
+      ],
       connectsTo: 'head'
     },
     hair: {
@@ -1163,22 +1095,9 @@ $( document ).ready(function() {
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'texture',
-        points: 'M9.1,6.9c0,0,0,9,1,5s4-7,4-7s18-6,13-4s-7,4-7,4s3-3,21-4s29,15,29,15s2.4,16.5,2,23c-0.1,1-1,4-1,4l-2,12 l-1-13l-3-6l-19-4c0,0,14,8,11,8s-19-9-19-9s15,11,11,10s-12-7-12-7s4,12,1,10s-10-15-10-15l-10-4c0,0-4-3-6-1s0,14,0,14s-2,2-4,6 s-2,11-2,11s1-3-4-18s3-24,3-24L9.1,6.9z',
-        width: 72,
-        height: 59,
-        opacity: 0.7,
-        right: 39,
-        bottom: 38,
-        rotation: 0,
-        radius: 10,
-        texture: {
-          uri: 'images/texture-fur.jpg',
-          width: 350,
-          height: 235
-        }
-      }],
+      sets: [
+        //{id: 'hair1', flip: false}
+      ],
       connectsTo: 'head'
     },
     hat: {
@@ -1186,20 +1105,21 @@ $( document ).ready(function() {
       yscale: 1,
       rotation: 0,
       inheritsRotation: true,
-      parts: [{
-        type: 'polygon',
-        points: '50,0 60,40 100,50 60,60 50,100 40,60 0,50 40,40',
-        width: 5,
-        height: 5,
-        opacity: 1,
-        right: 'center',
-        bottom: 'center',
-        rotation: 0,
-        radius: 10,
-        fill: '#c8a7a5'
-      }],
+      sets: [
+        {id: 'hat1', flip: false}
+      ],
       connectsTo: 'head'
-    },*/
+    },
+    beard: {
+      xscale: 1,
+      yscale: 1,
+      rotation: 0,
+      inheritsRotation: true,
+      sets: [
+        {id: 'beard1', flip: false}
+      ],
+      connectsTo: 'head'
+    },
     armLeftUpper: {
       xscale: 1,
       yscale: 1,
@@ -2343,6 +2263,7 @@ sets.hand = [
         width: 30,
         height: 55,
         opacity: 1,
+        radius: 5,
         top: 1,
         left: 'center',
       }
@@ -2409,6 +2330,136 @@ sets.armLower = [
   }
 ];
 
+sets.eye = [
+  {
+    id: 'eye1',
+    parts: [
+      {
+        type: 'path',
+        points: 'M0.9,2.6l1.6-1.1c0.6-0.4,1.3-0.6,2-0.7c2.1-0.2,6.6-0.6,8.9,0.1c3,1,3,3,3,3s1,3-8,2c-5-0.6-6.9-1.4-7.6-2.1 C0.4,3.5,0.4,2.9,0.9,2.6z',
+        width: 17,
+        height: 7,
+        opacity: 0.1,
+        left: -4,
+        bottom: 'center',
+        fill: '#000'
+      }
+    ]
+  }
+]
+
+sets.nose = [
+  {
+    id: 'nose1',
+    parts: [{
+      type: 'path',
+      points: 'M0.5,2.2l8.5,18c0.3,0.6,0,1.2-0.6,1.5l-4.7,2c-0.6,0.3-1.3-0.1-1.4-0.8L0.5,5.2V2.2z',
+      width: 10,
+      height: 24,
+      opacity: 0.1,
+      right: -1,
+      top: 1,
+      fill: '#000'
+    }]
+  }
+];
+
+
+sets.mouth = [
+  {
+    id: 'mouth1',
+    parts: [{
+      type: 'rect',
+      width: 10,
+      height: 3,
+      opacity: 0.1,
+      right: 'center',
+      top: -30,
+      radius: 10,
+      fill: '#000'
+    },
+    {
+      type: 'rect',
+      width: 18,
+      height: 2,
+      opacity: 0.1,
+      right: 'center',
+      top: -26,
+      radius: 10,
+      fill: '#000'
+    }]
+  }
+];
+
+sets.ear = [
+  {
+    id: 'ear1',
+    parts: [{
+      type: 'rect',
+      width: 10,
+      height: 12,
+      opacity: 1,
+      left: 5,
+      bottom: 'center',
+      radius: 10
+    }]
+  }
+]
+
+sets.hair = [
+  {
+    id: 'hair1',
+    parts: [{
+      type: 'texture',
+      points: 'M9.1,6.9c0,0,0,9,1,5s4-7,4-7s18-6,13-4s-7,4-7,4s3-3,21-4s29,15,29,15s2.4,16.5,2,23c-0.1,1-1,4-1,4l-2,12 l-1-13l-3-6l-19-4c0,0,14,8,11,8s-19-9-19-9s15,11,11,10s-12-7-12-7s4,12,1,10s-10-15-10-15l-10-4c0,0-4-3-6-1s0,14,0,14s-2,2-4,6 s-2,11-2,11s1-3-4-18s3-24,3-24L9.1,6.9z',
+      width: 72,
+      height: 59,
+      opacity: 0.7,
+      right: 39,
+      bottom: 38,
+      texture: {
+        uri: 'images/texture-fur.jpg',
+        width: 350,
+        height: 235
+      }
+    }]
+  }
+]
+
+sets.hat = [
+  {
+    id: 'hat1',
+    parts: [{
+      type: 'polygon',
+      points: '50,0 60,40 100,50 60,60 50,100 40,60 0,50 40,40',
+      width: 5,
+      height: 5,
+      opacity: 1,
+      right: 'center',
+      bottom: 'center',
+      fill: '#c8a7a5'
+    }]
+  }
+]
+
+sets.beard = [
+  {
+    id: 'beard1',
+    parts: [    {
+      type: 'texture',
+      width: 105,
+      height: 107,
+      opacity: 1,
+      top: 45,
+      right: 'center',
+      texture: {
+        uri: 'images/texture-mancover.png',
+        width: 105,
+        height: 107
+      }
+    }]
+  }
+]
 
 window.getSet = function(slotType, setID) {
   for(var key in window.sets) {

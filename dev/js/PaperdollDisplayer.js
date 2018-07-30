@@ -33,11 +33,17 @@ class PaperdollDisplayer {
   populateSets(config) {
 
     for(var key in config) {
-      for(var set of config[key].sets) {
+      for(var setIndex in config[key].sets) {
+        var set = config[key].sets[setIndex]
         var slotString = key.replace('Left', '').replace('Right', '');
         var newSet = getSet(slotString,set.id);
+        if (!newSet || newSet.parts.length < 1) {
+          set.parts = [];
+          return;
+        }
         set.parts = JSON.parse(JSON.stringify(newSet.parts));
       }
+
     }
     return config;
   }
@@ -49,6 +55,7 @@ class PaperdollDisplayer {
   */
 
   drawLimb(limbName) {
+    if(this.dollConfig[limbName].sets.length < 1) {console.log(limbName);return;}
     var wrapper = this.draw.nested();
     wrapper.viewbox(0,0,this.canvasSize.width,this.canvasSize.height);
     wrapper.width(this.canvasSize.width);
@@ -364,7 +371,9 @@ class PaperdollDisplayer {
       }
 
       this.updateAxlePoint(limbName);
-      this.updateConnectionPoints(limbName, this.doll[limbName].sets[0].parts[0].element);
+      if(this.doll[limbName].sets.length > 0) {
+        this.updateConnectionPoints(limbName, this.doll[limbName].sets[0].parts[0].element);
+      }
 
       //limbName has connection
       if (this.doll[limbName].connectsTo) {
