@@ -106,8 +106,9 @@ class PaperdollTimelineEditor {
     if(!target) {return null;}
     let node = target;
     for (var partIndex=0; (node=node.previousSibling); partIndex++);
+      console.log(partIndex)
     var limbName = target.id;
-    var part = this.paperdollDisplayer.doll[limbName].parts[partIndex];
+    var part = this.paperdollDisplayer.doll[limbName].sets[0].parts[partIndex];
     window.currentProp = limbName;
     window.currentPropPart = part;
     window.currentPropNode = target;

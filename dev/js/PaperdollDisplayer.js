@@ -2,6 +2,7 @@ class PaperdollDisplayer {
 
   constructor(dollConfig, DOMElementID) {
     this.dollConfig = dollConfig;
+    this.populateSets(dollConfig)
     this.DOMElement = $('#'+DOMElementID);
     //REPLACE 'drawing' with DOMElement.id
     this.doll = {};
@@ -9,14 +10,14 @@ class PaperdollDisplayer {
     this.animation = {};
     this.connectionPoints = [];
     this.axlePoints = [];
-
     this.canvasSize = {
       width: this.DOMElement.width(),
       height: this.DOMElement.height()
     }
     this.draw = SVG(DOMElementID).size(this.canvasSize.width, this.canvasSize.height);
-    for (var part in dollConfig) {
-      this.drawLimb(part);
+    
+    for (var slot in dollConfig) {
+      this.drawLimb(slot);
     }
 
     this.updateInterval = setInterval(this.update.bind(this), 30);
@@ -25,8 +26,22 @@ class PaperdollDisplayer {
       groups: this.createKeyframeObject(this.doll)
     };
 
-    this.playAnimation({keyframes:[], cameraSetting: 'face'})
+    this.playAnimation({keyframes:[], cameraSetting: 'face'});
+
   }
+
+  populateSets(config) {
+
+    for(var key in config) {
+      for(var set of config[key].sets) {
+        var slotString = key.replace('Left', '').replace('Right', '');
+        var newSet = getSet(slotString,set.id);
+        set.parts = JSON.parse(JSON.stringify(newSet.parts));
+      }
+    }
+    return config;
+  }
+
 
   /*
   *  DRAWING 
@@ -38,10 +53,14 @@ class PaperdollDisplayer {
     wrapper.viewbox(0,0,this.canvasSize.width,this.canvasSize.height);
     wrapper.width(this.canvasSize.width);
     wrapper.height(this.canvasSize.height);
-    this.doll[limbName] = Object.assign({},this.dollConfig[limbName]);
+    this.doll[limbName] = Object.assign({}, JSON.parse(JSON.stringify(this.dollConfig[limbName])));
     this.doll[limbName].wrapper = wrapper;
     this.doll[limbName].group = wrapper.group();
-    this.doll[limbName].parts = [];
+    for(var set of this.doll[limbName].sets) {
+      //Empty parts so we can fill with element & data later
+      set.parts = [];
+    }
+
     var gradient = this.draw.gradient('radial', function(stop) {
       stop.at(0, '#D2996C', 1)
       stop.at(1, '#B6855E',1)
@@ -51,34 +70,56 @@ class PaperdollDisplayer {
       this.doll[limbName].wrapper.parent().node.clientWidth/2,
       this.doll[limbName].wrapper.parent().node.clientHeight/3.3      
     );
+    for(var set of this.dollConfig[limbName].sets) {
+      for (var part of set.parts) {
 
-    for (var partIndex in this.dollConfig[limbName].parts) {
-      var part = this.dollConfig[limbName].parts[partIndex];
-      var drawnPart = {}
+        var drawnPart = {}
+        var fill;
+        if(part.type === 'path') {
+          drawnPart = wrapper.path(part.points);
+          fill = part.fill ? part.fill : gradient;
+        }
+        if(part.type === 'polygon') {
+          drawnPart = wrapper.polygon(part.points);
+          fill = part.fill ? part.fill : gradient;
+        }
+        if(part.type === 'rect') {
+          drawnPart = wrapper.rect(part.width, part.height);
+          fill = part.fill ? part.fill : gradient;
+        }
+        if(part.type === 'texture') {
+          drawnPart = wrapper.rect(part.width, part.height);
+          fill = part.texture ? wrapper.image(part.texture.uri, part.texture.width, part.texture.height) : null;
+        }
+        drawnPart.attr({ 
+          fill: fill,
+          opacity: part.opacity ? part.opacity : 1, 
+          id: limbName,
+          rx: part.radius,
+          ry: part.radius,
+        });
+        if (set.flip) {
+          (function(){
+            if (part.right) {
+              part[ 'left' ] = part[ 'right' ];
+              delete part[ 'right' ];
+              return;
+            }
+            if (part.left) {
+              part[ 'right' ] = part[ 'left' ];
+              delete part[ 'left' ];
+            }
+          }())
+        }
 
-      if(part.shape === 'path') {
-        drawnPart = wrapper.path(part.points);
+        var dollPart = {element: drawnPart, data: part};
+        for(var dollSet of this.doll[limbName].sets) {
+          if(dollSet.id === set.id) {
+            dollSet.parts.push(dollPart);
+          }
+        }
+        this.doll[limbName].group.add(drawnPart);
       }
-      if(part.shape === 'polygon') {
-        drawnPart = wrapper.polygon(part.points);
-      }
-      if(part.shape === 'rect') {
-        drawnPart = wrapper.rect(part.width, part.height);
-      }
-      var fill = part.fill ? part.fill : gradient;
-      var texture = part.texture ? wrapper.image(part.texture.uri, part.texture.width, part.texture.height) : null;
-
-      drawnPart.attr({ 
-        fill: texture ? texture : fill,
-        opacity: part.opacity ? part.opacity : 1, 
-        id: limbName,
-        rx: part.radius,
-        ry: part.radius,
-      });
-
-      var dollPart = {element: drawnPart, data: part, texture: texture ? texture : null};
-      this.doll[limbName].parts.push(dollPart);
-      this.doll[limbName].group.add(drawnPart);
     }
 
     this.drawConnectionPoints(limbName);
@@ -92,15 +133,15 @@ class PaperdollDisplayer {
   }
   drawConnectionPoints(limbName, visible) {
     //connectionpoints
-    for (var connectionFor in this.dollConfig[limbName].connectionsFor) {
-      var connection = this.dollConfig[limbName].connectionsFor[connectionFor];
+    for (var connectionFor in this.doll[limbName].connectionsFor) {
+      var connection = this.doll[limbName].connectionsFor[connectionFor];
       connection.point = this.doll[limbName].wrapper.rect(5, 5).attr({ fill: '#f00', opacity: visible ? 0.2 : 0 });
       connection.point.center(
         this.doll[limbName].wrapper.width()/2,
         this.doll[limbName].wrapper.height()/2
       );
       this.connectionPoints.push(connection.point);
-      //doll[limbName].group.add(connection.point);
+      //this.doll[limbName].group.add(connection.point);
     }
   }
 
@@ -124,7 +165,7 @@ class PaperdollDisplayer {
     setTimeout(function(){
       this.draw.animate(duration,'<>').viewbox(
         this.doll[limbName].wrapper.cx()-(this.canvasSize.width/zoomLevel)/2,
-        this.doll[limbName].wrapper.cy()-(this.canvasSize.height/zoomLevel)/2,
+        this.doll[limbName].wrapper.cy()-(this.canvasSize.height/zoomLevel)/3,
         this.canvasSize.width/zoomLevel,
         this.canvasSize.height/zoomLevel
       );
@@ -139,10 +180,10 @@ class PaperdollDisplayer {
   playAnimation(config, loop, cbFinished, timelineEditor) {
     if(config.cameraSetting) {
       if (config.cameraSetting === 'face') {
-        this.cameraZoomToLimb('head', 1.8, 750)
+        this.cameraZoomToLimb('head', 2.3, 750)
       }
       if (config.cameraSetting === 'body') {
-        this.cameraZoomToLimb('belly', 1.2, 750)
+        this.cameraZoomToLimb('hip', 1.2, 750)
       }
     }
     this.animation = {
@@ -222,6 +263,7 @@ class PaperdollDisplayer {
       this.animation.currentAnimations[limbName] = {};
       for (var animationAttribute in group) {
         var value = group[animationAttribute];
+        if (!this.doll[limbName]) {continue;}
         this.animation.currentAnimations[limbName][animationAttribute] = {
           from: this.doll[limbName][animationAttribute]
         }
@@ -272,9 +314,10 @@ class PaperdollDisplayer {
 
   poseCharacter(keyframe) {
     //reset
-    for (var g in keyframe.groups) {
-      for (var limbName in keyframe.groups[g]) {
-        this.doll[g][limbName] = keyframe.groups[g][limbName];
+    for (var limbName in keyframe.groups) {
+      for (var animationAttribute in keyframe.groups[limbName]) {
+        if(!this.doll[limbName]) {continue;}
+        this.doll[limbName][animationAttribute] = keyframe.groups[limbName][animationAttribute];
       }
     }
   }
@@ -287,28 +330,41 @@ class PaperdollDisplayer {
   update() {
 
     for (var limbName in this.doll) {
+      for(var set of this.doll[limbName].sets) {
+        var flip = set.flip;
+        for (var part of set.parts) {
 
-      for (var i = 0; i < this.doll[limbName].parts.length; i++) {
-        var part = this.doll[limbName].parts[i];
+          if (flip) {
+            //Keeping things simple, left arm stuff works on right arms etc.
+            //Flip pattern>image horizontally
+            part.element.flip('x');
+          }
+          //Center Textures
+          if (part.data.type === 'texture') {
+            var tetureRef = part.element.reference('fill');
+            tetureRef.center(
+              part.element.cx(),
+              part.element.cy()
+            );
+          }
 
-        part.element.width(part.data.width*this.doll[limbName].xscale);
-        part.element.height(part.data.height*this.doll[limbName].yscale);
+          part.element.width(part.data.width*this.doll[limbName].xscale);
+          part.element.height(part.data.height*this.doll[limbName].yscale);
 
-        var posFromEdge = this.positionFromEdge(part, this.doll[limbName].wrapper);
-        part.element.center(
-          posFromEdge.x,
-          posFromEdge.y
-        );
-        if (part.texture) {
-          part.texture.parent().center(
-            part.element.cx(),
-            part.element.cy()
+          var posFromEdge = this.positionFromEdge(part, this.doll[limbName].wrapper);
+          part.element.center(
+            posFromEdge.x,
+            posFromEdge.y
           );
+
+
+
+
         }
       }
 
       this.updateAxlePoint(limbName);
-      this.updateConnectionPoints(limbName);
+      this.updateConnectionPoints(limbName, this.doll[limbName].sets[0].parts[0].element);
 
       //limbName has connection
       if (this.doll[limbName].connectsTo) {
@@ -345,11 +401,12 @@ class PaperdollDisplayer {
   }
 
 
-  updateConnectionPoints(limbName) {
+  updateConnectionPoints(limbName, element) {
     //connectionpoints
     for (var connectionFor in this.doll[limbName].connectionsFor) {
       var connection = this.doll[limbName].connectionsFor[connectionFor];
-      var posFromEdge = this.positionFromEdge2(connection, this.doll[limbName]);
+
+      var posFromEdge = this.positionFromEdge2(connection, this.doll[limbName], element);
 
       var pointDir = this.pointDirection({x:this.doll[limbName].wrapper.width()/2,y:this.doll[limbName].wrapper.height()/2},{x:posFromEdge.x,y:posFromEdge.y});
       var pointDist = this.pointDistance({x:this.doll[limbName].wrapper.width()/2,y:this.doll[limbName].wrapper.height()/2},{x:posFromEdge.x,y:posFromEdge.y});
@@ -398,27 +455,27 @@ class PaperdollDisplayer {
     return {x:horizontal, y:vertical};
   }
 
-  positionFromEdge2(info, limb) {
+  positionFromEdge2(info, limb, element) {
     var horizontal, vertical;
 
     if (info.left !== undefined) {
       var templeft = info.left;
-      if (isNaN(templeft)) {templeft = limb.parts[0].element.width()/2;}
-      horizontal = limb.parts[0].element.x() + templeft;
+      if (isNaN(templeft)) {templeft = element.width()/2;}
+      horizontal = element.x() + templeft;
     } else if (info.right !== undefined) {
       var tempright = info.right;
-      if (isNaN(tempright)) {tempright = limb.parts[0].element.width()/2;}
-      horizontal = limb.parts[0].element.x() + limb.parts[0].element.width() - tempright;
+      if (isNaN(tempright)) {tempright = element.width()/2;}
+      horizontal = element.x() + element.width() - tempright;
     }
 
     if (info.top !== undefined) {
       var temptop = info.top;
-      if (isNaN(temptop)) {temptop = limb.parts[0].element.height()/2;}
-      vertical = limb.parts[0].element.y() + temptop;
+      if (isNaN(temptop)) {temptop = element.height()/2;}
+      vertical = element.y() + temptop;
     } else if (info.bottom !== undefined) {
       var tempbottom = info.bottom;
-      if (isNaN(tempbottom)) {tempbottom = limb.parts[0].element.height()/2;}
-      vertical = limb.parts[0].element.y() + limb.parts[0].element.height() - tempbottom;
+      if (isNaN(tempbottom)) {tempbottom = element.height()/2;}
+      vertical = element.y() + element.height() - tempbottom;
     }
     return {x:horizontal, y:vertical};
   }
